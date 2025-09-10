@@ -13,9 +13,9 @@ body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvet
 .card.selected { transform:translateY(-10px) scale(1.05); box-shadow:0 0 10px #fff; }
 .card.disabled { filter:grayscale(100%); cursor:not-allowed; }
 .hidden { display:none; }
-#game-board { background:#4CAF50; position:relative; width:100%; max-width:800px; height:600px; margin:auto; border:4px solid #8B4513; border-radius:12px; overflow:hidden; touch-action:none; }
+#game-board { background:#4CAF50; position:relative; width:360px; height:640px; margin:auto; border:4px solid #8B4513; border-radius:12px; overflow:hidden; touch-action:none; }
 .river { position:absolute; width:100%; height:10%; top:45%; background:linear-gradient(to right,#4682B4,#87CEEB); }
-.troop { position:absolute; width:40px; height:40px; background:#f59e0b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; text-align:center; cursor:pointer; }
+.troop { position:absolute; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; text-align:center; cursor:pointer; }
 .enemy { background:red; }
 .tower { position:absolute; width:60px; height:60px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px; text-align:center; color:white; }
 .king { background:purple; }
@@ -113,13 +113,20 @@ document.addEventListener('DOMContentLoaded',()=>{
   let playerElixir=3;
   const maxElixir=10;
   let timer=180;
-  let timerInterval=null;
   let troops=[];
   let aiTowers=3, playerTowers=3;
   const towers=[];
+  let animationFrame;
 
-  const troopNames=["Knight","Archer","Giant","Goblin","Wizard","Skeleton","Minion","Balloon","Hog Rider","Valkyrie","P.E.K.K.A","Musketeer","Baby Dragon","Electro Wizard","Ice Spirit","Fire Spirit","Mega Minion","Royal Ghost","Prince","Dark Prince","Ram Rider"];
-  troopNames.forEach(n=>allCards.push({name:n,type:"Troop",cost:Math.floor(Math.random()*6)+1,damage:1,hp:5}));
+  const troopData=[
+    {name:"Knight",cost:3},{name:"Archer",cost:3},{name:"Giant",cost:5},{name:"Goblin",cost:2},
+    {name:"Wizard",cost:5},{name:"Skeleton",cost:1},{name:"Minion",cost:3},{name:"Balloon",cost:5},
+    {name:"Hog Rider",cost:4},{name:"Valkyrie",cost:4},{name:"P.E.K.K.A",cost:7},{name:"Musketeer",cost:4},
+    {name:"Baby Dragon",cost:4},{name:"Electro Wizard",cost:4},{name:"Ice Spirit",cost:1},{name:"Fire Spirit",cost:2},
+    {name:"Mega Minion",cost:3},{name:"Royal Ghost",cost:3},{name:"Prince",cost:5},{name:"Dark Prince",cost:4},{name:"Ram Rider",cost:5}
+  ];
+
+  troopData.forEach(d=>allCards.push({...d,hp:5,damage:1}));
 
   function renderDeck(){
     currentDeckEl.innerHTML='';
@@ -189,24 +196,19 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     for(let i=0;i<handSize;i++) if(decks[currentDeck][i]) drawCard(decks[currentDeck][i]);
 
-    if(timerInterval) clearInterval(timerInterval);
-    timerInterval=setInterval(()=>{
-      timer--; timerEl.textContent=timer;
-      moveTroops();
-      checkVictory();
-      if(timer<=0) endGame("Draw","Time ran out!");
-    },1000);
+    if(animationFrame) cancelAnimationFrame(animationFrame);
+    animate();
   }
 
   function setupTowers(){
     // Player towers
-    spawnTower(50,500,'king','player');
-    spawnTower(150,500,'princess','player');
-    spawnTower(650,500,'princess','player');
+    spawnTower(50,540,'king','player'); // King far back
+    spawnTower(100,460,'princess','player'); // Princess closer to river
+    spawnTower(260,460,'princess','player');
     // AI towers
-    spawnTower(50,50,'princess','ai');
-    spawnTower(650,50,'princess','ai');
-    spawnTower(350,50,'king','ai');
+    spawnTower(50,20,'princess','ai');
+    spawnTower(260,20,'princess','ai');
+    spawnTower(180,100,'king','ai');
   }
 
   function spawnTower(x,y,type,owner){
@@ -245,7 +247,6 @@ document.addEventListener('DOMContentLoaded',()=>{
         dragging=false;
         const rect=gameBoard.getBoundingClientRect();
         if(e.pageX>=rect.left && e.pageX<=rect.right && e.pageY>=rect.top+rect.height/2 && e.pageY<=rect.bottom){
-          // Spawn troop
           playerElixir-=card.cost;
           elixirCountEl.textContent=playerElixir;
           elixirBarFill.style.width=(playerElixir/maxElixir*100)+'%';
@@ -264,8 +265,15 @@ document.addEventListener('DOMContentLoaded',()=>{
     t.textContent=card.name[0];
     gameBoard.appendChild(t);
     x=x||50; y=y||500;
-    t.style.left=x+'px'; t.style.top=y+'px';
-    troops.push({el:t,owner,damage:card.damage,hp:card.hp});
+    troops.push({el:t,owner,damage:card.damage,hp:card.hp,x:x,y:y});
+  }
+
+  function animate(){
+    timer--; timerEl.textContent=timer;
+    moveTroops();
+    checkVictory();
+    if(timer<=0) endGame("Draw","Time ran out!");
+    animationFrame=requestAnimationFrame(animate);
   }
 
   function moveTroops(){
@@ -273,25 +281,21 @@ document.addEventListener('DOMContentLoaded',()=>{
       let targetTower=null;
       let dist=Infinity;
       towers.filter(tt=>tt.owner!==tr.owner).forEach(tt=>{
-        const dx=tt.el.offsetLeft-tr.el.offsetLeft;
-        const dy=tt.el.offsetTop-tr.el.offsetTop;
+        const dx=tt.el.offsetLeft-tr.x;
+        const dy=tt.el.offsetTop-tr.y;
         const d=Math.sqrt(dx*dx+dy*dy);
         if(d<dist){dist=d; targetTower=tt;}
       });
       if(targetTower){
-        const dx=targetTower.el.offsetLeft-tr.el.offsetLeft;
-        const dy=targetTower.el.offsetTop-tr.el.offsetTop;
+        const dx=targetTower.el.offsetLeft-tr.x;
+        const dy=targetTower.el.offsetTop-tr.y;
         const len=Math.sqrt(dx*dx+dy*dy);
         const speed=2;
-        tr.el.style.left=(tr.el.offsetLeft+dx/len*speed)+'px';
-        tr.el.style.top=(tr.el.offsetTop+dy/len*speed)+'px';
-        if(len<25){ // Attack
-          targetTower.hp-=tr.damage;
-          if(targetTower.hp<=0){
-            targetTower.el.remove();
-            towers.splice(towers.indexOf(targetTower),1);
-          }
-        }
+        tr.x+=dx/len*speed;
+        tr.y+=dy/len*speed;
+        tr.el.style.left=tr.x+'px';
+        tr.el.style.top=tr.y+'px';
+        if(len<25){ targetTower.hp-=tr.damage; if(targetTower.hp<=0){ targetTower.el.remove(); towers.splice(towers.indexOf(targetTower),1); } }
       }
     });
   }
@@ -306,7 +310,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     messageTitle.textContent=title;
     messageText.textContent=text;
     messageModal.classList.remove('hidden');
-    clearInterval(timerInterval);
+    cancelAnimationFrame(animationFrame);
     troops.forEach(t=>t.el.remove());
     troops=[];
     towers.forEach(t=>t.el.remove());
