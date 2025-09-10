@@ -334,7 +334,7 @@
                 clearInterval(aiInterval);
                 gameLoopInterval = setInterval(gameLoop, 1000 / 30);
                 elixirInterval = setInterval(generateElixir, 2000);
-                aiInterval = setInterval(aiLogic, 2500);
+                aiInterval = setInterval(aiLogic, 1000); // Increased AI check frequency
                 timerInterval = setInterval(updateTimer, 1000);
                 updateTimer();
             }
@@ -353,6 +353,7 @@
                     el: document.createElement('div')
                 };
                 if (isKing) tower.isActivated = false;
+                else tower.isActivated = true; // Princess towers are always active
                 
                 tower.el.className = `tower ${owner} ${type}-tower`;
                 tower.el.style.left = `${x}%`;
@@ -535,7 +536,6 @@
                 troop.el.style.left = `${x}%`;
                 troop.el.style.top = `${y}%`;
                 troop.el.style.transform = 'translate(-50%, -50%)';
-                troop.el.innerHTML = data.emoji;
                 if (owner === 'player') {
                     troop.el.style.backgroundColor = 'rgba(135, 206, 250, 0.7)';
                     troop.el.style.border = '2px solid #4682B4';
@@ -794,6 +794,19 @@
                     if (obj.owner === 'ai') return gameObjects.find(t => t.objType === 'tower' && t.owner === 'player');
                     return null;
                 }
+                
+                // Prioritize king tower if a princess tower is destroyed
+                const opponentPrincessTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === opponent && o.type === 'princess');
+                const hasDestroyedPrincessTower = opponentPrincessTowers.length < 2;
+                
+                if (hasDestroyedPrincessTower) {
+                    const kingTower = gameObjects.find(o => o.objType === 'tower' && o.owner === opponent && o.type === 'king');
+                    if (kingTower && kingTower.hp > 0) {
+                        // All troops target king tower if a princess tower is down
+                        return kingTower;
+                    }
+                }
+
                 validTargets.sort((a, b) => getDistance(obj, a) - getDistance(obj, b));
                 return validTargets[0];
             }
@@ -829,18 +842,17 @@
             }
             
             function updateTower(tower) {
-                if(tower.isActivated === false) {
-                    const opponent = tower.owner === 'player' ? 'ai' : 'player';
-                    const kingTowerDestroyed = gameObjects.find(o => o.objType === 'tower' && o.owner === opponent && o.type === 'king' && o.hp <= 0);
-                    const princessTowerDestroyed = gameObjects.find(o => o.objType === 'tower' && o.owner === opponent && o.type === 'princess' && o.hp <= 0);
-                    if(kingTowerDestroyed || princessTowerDestroyed) {
-                        tower.isActivated = true;
-                    }
+                const opponent = tower.owner === 'player' ? 'ai' : 'player';
+                const opponentPrincessTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === opponent && o.type === 'princess');
+                const hasDestroyedPrincessTower = opponentPrincessTowers.length < 2;
+
+                if (tower.type === 'king' && hasDestroyedPrincessTower && !tower.isActivated) {
+                    tower.isActivated = true;
                 }
+
                 if (tower.hp <= 0) return;
 
                 if (tower.isActivated && Date.now() - tower.lastAttack > tower.attackSpeed) {
-                    const opponent = tower.owner === 'player' ? 'ai' : 'player';
                     const target = getNearestTarget(tower);
                     if (target && getDistance(tower, target) < tower.range) {
                         attack(tower, target);
@@ -901,35 +913,49 @@
             }
 
             function aiLogic() {
-                const aiTowers = gameObjects.filter(obj => obj.owner === 'ai' && obj.objType === 'tower');
-                const playerTowers = gameObjects.filter(obj => obj.owner === 'player' && obj.objType === 'tower');
-                const allPlayerObjects = gameObjects.filter(obj => obj.owner === 'player');
-                const allAiObjects = gameObjects.filter(obj => obj.owner === 'ai');
+                if (aiElixir < 3) return;
 
-                if (aiElixir >= 6) {
-                    if (Math.random() < 0.3 && playerTowers.length > 0) {
-                        const targetTower = playerTowers[Math.floor(Math.random() * playerTowers.length)];
-                        if(targetTower) {
-                            const availableCards = Object.values(CARD_DATA).filter(card => card.cost <= aiElixir && card.cardType !== 'spell');
-                            if (availableCards.length > 0) {
-                                const cardToPlay = availableCards[Math.floor(Math.random() * availableCards.length)];
-                                aiElixir -= cardToPlay.cost;
-                                if (cardToPlay.cardType === 'troop') createTroop('ai', cardToPlay.name.replace(/ /g, ''), targetTower.x + (Math.random() - 0.5) * 20, targetTower.y + (Math.random() - 0.5) * 20);
-                                else if (cardToPlay.cardType === 'building') createBuilding('ai', cardToPlay.name.replace(/ /g, ''), targetTower.x + (Math.random() - 0.5) * 10, targetTower.y + (Math.random() - 0.5) * 10);
-                            }
-                        }
+                const playerTowers = gameObjects.filter(obj => obj.owner === 'player' && obj.objType === 'tower');
+                const playerKingTower = playerTowers.find(t => t.type === 'king');
+                const playerPrincessTowers = playerTowers.filter(t => t.type === 'princess');
+
+                const availableCards = Object.values(CARD_DATA)
+                    .filter(card => card.cost <= aiElixir && (card.cardType === 'troop' || card.cardType === 'building'));
+
+                if (availableCards.length === 0) return;
+
+                // Prioritize attacking if enemy troops are near AI towers
+                const aiDefensiveTowers = gameObjects.filter(obj => obj.owner === 'ai' && obj.objType === 'tower' && obj.hp > 0);
+                const threats = gameObjects.filter(obj => obj.owner === 'player' && obj.objType === 'troop' && aiDefensiveTowers.some(tower => getDistance(obj, tower) < 20));
+
+                if (threats.length > 0) {
+                    const cardToPlay = availableCards.find(c => c.cost < 5); // Pick a cheap card to defend
+                    if (cardToPlay) {
+                        aiElixir -= cardToPlay.cost;
+                        createTroop('ai', cardToPlay.name.replace(/ /g, ''), threats[0].x, threats[0].y - 5);
+                        return;
                     }
                 }
 
-                if (aiElixir >= 4) {
-                    const availableCards = Object.values(CARD_DATA).filter(card => card.cost <= aiElixir && card.cardType !== 'spell');
-                    if (availableCards.length > 0) {
-                        const cardToPlay = availableCards[Math.floor(Math.random() * availableCards.length)];
+                // If a player princess tower is down, focus on the king tower
+                if (playerPrincessTowers.length < 2 && playerKingTower && playerKingTower.hp > 0) {
+                     const cardToPlay = availableCards.find(c => c.cost > 4 && c.targets === 'buildings');
+                     if(cardToPlay) {
                         aiElixir -= cardToPlay.cost;
-                        const x = Math.random() * 80 + 10;
-                        const y = Math.random() * 40 + 10;
-                        if (cardToPlay.cardType === 'troop') createTroop('ai', cardToPlay.name.replace(/ /g, ''), x, y);
-                        else if (cardToPlay.cardType === 'building') createBuilding('ai', cardToPlay.name.replace(/ /g, ''), x, y);
+                        createTroop('ai', cardToPlay.name.replace(/ /g, ''), playerKingTower.x + (Math.random() - 0.5) * 10, playerKingTower.y + (Math.random() - 0.5) * 10);
+                        return;
+                     }
+                }
+
+                // Normal push
+                if (aiElixir >= 5) {
+                    const offensiveCard = availableCards.find(c => c.cost >= 5);
+                    if (offensiveCard) {
+                        aiElixir -= offensiveCard.cost;
+                        const targetTower = playerPrincessTowers.length > 0 ? playerPrincessTowers[Math.floor(Math.random() * playerPrincessTowers.length)] : playerKingTower;
+                        if(targetTower) {
+                             createTroop('ai', offensiveCard.name.replace(/ /g, ''), targetTower.x + (Math.random() - 0.5) * 10, targetTower.y + (Math.random() - 0.5) * 10);
+                        }
                     }
                 }
                 updateUI();
@@ -954,35 +980,39 @@
 
                 let title = '';
                 let text = '';
-                const playerKing = gameObjects.find(o => o.objType === 'tower' && o.owner === 'player' && o.type === 'king');
-                const aiKing = gameObjects.find(o => o.objType === 'tower' && o.owner === 'ai' && o.type === 'king');
+                const playerTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'player');
+                const aiTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'ai');
 
-                if (playerKing && playerKing.hp <= 0) {
-                    title = 'You Lose!';
-                    text = "Your King's tower was destroyed!";
-                } else if (aiKing && aiKing.hp <= 0) {
+                if (aiTowers.length === 0) {
                     title = 'You Win!';
-                    text = "The AI's King's tower was destroyed!";
-                } else if (playerTowers === 0) {
+                    text = "You've destroyed all of the AI's towers!";
+                } else if (playerTowers.length === 0) {
                     title = 'You Lose!';
                     text = "All your towers were destroyed!";
-                } else if (aiTowers === 0) {
-                    title = 'You Win!';
-                    text = "All the AI's towers were destroyed!";
                 } else {
-                    const pTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'player').length;
-                    const aTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'ai').length;
-                    if(pTowers > aTowers) {
-                        title = 'You Win on Points!';
-                        text = `You had ${pTowers} towers remaining to the AI's ${aTowers}.`;
-                    } else if (aTowers > pTowers) {
-                         title = 'AI Wins on Points!';
-                         text = `The AI had ${aTowers} towers remaining to your ${pTowers}.`;
+                    const playerKing = playerTowers.find(t => t.type === 'king');
+                    const aiKing = aiTowers.find(t => t.type === 'king');
+                    if (!aiKing) {
+                         title = 'You Win!';
+                         text = "The AI's King Tower was destroyed!";
+                    } else if (!playerKing) {
+                         title = 'You Lose!';
+                         text = "Your King Tower was destroyed!";
                     } else {
-                        title = 'It\'s a Draw!';
-                        text = 'Both sides had the same number of towers remaining.';
+                        // Tiebreaker
+                        if(playerTowers.length > aiTowers.length) {
+                             title = 'You Win on Points!';
+                             text = `You had ${playerTowers.length} towers remaining to the AI's ${aiTowers.length}.`;
+                        } else if (aiTowers.length > playerTowers.length) {
+                             title = 'AI Wins on Points!';
+                             text = `The AI had ${aiTowers.length} towers remaining to your ${playerTowers.length}.`;
+                        } else {
+                            title = 'It\'s a Draw!';
+                            text = 'Both sides had the same number of towers remaining.';
+                        }
                     }
                 }
+
                 messageTitle.textContent = title;
                 messageText.textContent = text;
                 messageModal.classList.remove('hidden');
