@@ -228,59 +228,57 @@
 
             const CARD_DATA = {
                 // Troops
-                knight: { cardType: 'troop', name: 'Knight', emoji: '⚔️', cost: 3, hp: 155, damage: 20, range: 1.5, speed: 1.2, type: 'ground', attackSpeed: 1200 },
-                archer: { cardType: 'troop', name: 'Archer', emoji: '🏹', cost: 3, hp: 65, damage: 13, range: 5, speed: 1.2, type: 'ground', attackSpeed: 1000 },
-                giant: { cardType: 'troop', name: 'Giant', emoji: '🗿', cost: 5, hp: 500, damage: 28, range: 1.5, speed: 0.8, type: 'ground', targets: 'buildings', attackSpeed: 1700 },
-                pekka: { cardType: 'troop', name: 'P.E.K.K.A', emoji: '🤖', cost: 7, hp: 650, damage: 120, range: 1.6, speed: 0.7, type: 'ground', attackSpeed: 1900 },
-                minions: { cardType: 'troop', name: 'Minions', emoji: '🦇', cost: 3, hp: 48, damage: 16, range: 2.5, speed: 1.8, type: 'air', spawnCount: 3, spawnRadius: 15, attackSpeed: 1000 },
-                hogRider: { cardType: 'troop', name: 'Hog Rider', emoji: '🐗', cost: 4, hp: 220, damage: 45, range: 1.5, speed: 2.2, type: 'ground', targets: 'buildings', attackSpeed: 1600 },
-                wizard: { cardType: 'troop', name: 'Wizard', emoji: '🧙', cost: 5, hp: 110, damage: 45, range: 5.5, speed: 1.1, type: 'ground', attackSpeed: 1600, splashDamage: true, splashRadius: 15 },
-                golem: { cardType: 'troop', name: 'Golem', emoji: '🪨', cost: 8, hp: 850, damage: 40, range: 1.5, speed: 0.6, type: 'ground', targets: 'buildings', attackSpeed: 2500 },
                 skeletons: { cardType: 'troop', name: 'Skeletons', emoji: '💀', cost: 1, hp: 16, damage: 6, range: 1.5, speed: 1.9, type: 'ground', spawnCount: 4, spawnRadius: 10, attackSpeed: 1000 },
-                valkyrie: { cardType: 'troop', name: 'Valkyrie', emoji: '👩‍🦰', cost: 4, hp: 190, damage: 32, range: 1.5, speed: 1.3, type: 'ground', attackSpeed: 1500, attackType: 'melee-splash' },
-                musketeer: { cardType: 'troop', name: 'Musketeer', emoji: '💂‍♀️', cost: 4, hp: 120, damage: 40, range: 6, speed: 1.1, type: 'ground', attackSpeed: 1200 },
-                prince: { cardType: 'troop', name: 'Prince', emoji: '🐴', cost: 5, hp: 320, damage: 65, range: 1.6, speed: 1.7, type: 'ground', attackSpeed: 1500, canCharge: true },
-                dragon: { cardType: 'troop', name: 'Dragon', emoji: '🐉', cost: 4, hp: 160, damage: 28, range: 4, speed: 1.4, type: 'air', attackSpeed: 1600, splashDamage: true, splashRadius: 10 },
                 goblins: { cardType: 'troop', name: 'Goblins', emoji: '👺', cost: 2, hp: 38, damage: 13, range: 1.5, speed: 2.0, type: 'ground', spawnCount: 3, spawnRadius: 10, attackSpeed: 1100 },
                 spearGoblins: { cardType: 'troop', name: 'Spear Goblins', emoji: '🔱', cost: 2, hp: 28, damage: 9, range: 5, speed: 2.0, type: 'ground', spawnCount: 3, spawnRadius: 10, attackSpeed: 1200 },
-                witch: { cardType: 'troop', name: 'Witch', emoji: '🧹', cost: 5, hp: 130, damage: 18, range: 5, speed: 1.1, type: 'ground', attackSpeed: 1100, splashDamage: true, splashRadius: 8, spawnId: 'skeletons', spawnSpeed: 7000 },
                 bomber: { cardType: 'troop', name: 'Bomber', emoji: '💣', cost: 2, hp: 45, damage: 30, range: 4.5, speed: 1.2, type: 'ground', attackSpeed: 1800, splashDamage: true, splashRadius: 12 },
-                miniPekka: { cardType: 'troop', name: 'Mini P.E.K.K.A', emoji: '⚙️', cost: 4, hp: 300, damage: 90, range: 1.5, speed: 1.5, type: 'ground', attackSpeed: 1700 },
-                royalGiant: { cardType: 'troop', name: 'Royal Giant', emoji: '👑', cost: 6, hp: 550, damage: 35, range: 6.0, speed: 0.7, type: 'ground', targets: 'buildings', attackSpeed: 1800 },
-                megaMinion: { cardType: 'troop', name: 'Mega Minion', emoji: '👿', cost: 3, hp: 130, damage: 35, range: 2.5, speed: 1.4, type: 'air', attackSpeed: 1500 },
                 iceGolem: { cardType: 'troop', name: 'Ice Golem', emoji: '🧊', cost: 2, hp: 280, damage: 10, range: 1.5, speed: 0.9, type: 'ground', targets: 'buildings', attackSpeed: 2500 },
+                knight: { cardType: 'troop', name: 'Knight', emoji: '⚔️', cost: 3, hp: 155, damage: 20, range: 1.5, speed: 1.2, type: 'ground', attackSpeed: 1200 },
+                archer: { cardType: 'troop', name: 'Archer', emoji: '🏹', cost: 3, hp: 65, damage: 13, range: 5, speed: 1.2, type: 'ground', attackSpeed: 1000 },
+                minions: { cardType: 'troop', name: 'Minions', emoji: '🦇', cost: 3, hp: 48, damage: 16, range: 2.5, speed: 1.8, type: 'air', spawnCount: 3, spawnRadius: 15, attackSpeed: 1000 },
+                megaMinion: { cardType: 'troop', name: 'Mega Minion', emoji: '👿', cost: 3, hp: 130, damage: 35, range: 2.5, speed: 1.4, type: 'air', attackSpeed: 1500 },
                 dartGoblin: { cardType: 'troop', name: 'Dart Goblin', emoji: '🎯', cost: 3, hp: 55, damage: 11, range: 6.5, speed: 2.0, type: 'ground', attackSpeed: 700 },
-                eliteBarbarians: { cardType: 'troop', name: 'Elite Barbarians', emoji: '💪', cost: 6, hp: 220, damage: 42, range: 1.5, speed: 2.1, type: 'ground', spawnCount: 2, spawnRadius: 5, attackSpeed: 1500 },
-                electroWizard: { cardType: 'troop', name: 'E. Wizard', emoji: '⚡️🧙', cost: 4, hp: 110, damage: 18, range: 5, speed: 1.2, type: 'ground', attackSpeed: 1800, stunDuration: 500 },
                 goblinGang: { cardType: 'troop', name: 'Goblin Gang', emoji: ' Gang ', cost: 3, spawnIds: [{id: 'goblins', count: 2}, {id: 'spearGoblins', count: 2}], type: 'ground' },
-
-                // --- NEW CARDS START HERE ---
-                barbarians: { cardType: 'troop', name: 'Barbarians', emoji: '🧔‍♂️', cost: 5, hp: 130, damage: 22, range: 1.5, speed: 1.1, type: 'ground', spawnCount: 4, spawnRadius: 12, attackSpeed: 1400 },
-                babyDragon: { cardType: 'troop', name: 'Baby Dragon', emoji: '🦖', cost: 4, hp: 140, damage: 20, range: 3.5, speed: 1.5, type: 'air', attackSpeed: 1500, splashDamage: true, splashRadius: 10 },
-                lumberjack: { cardType: 'troop', name: 'Lumberjack', emoji: '🪓', cost: 4, hp: 120, damage: 45, range: 1.5, speed: 2.4, type: 'ground', attackSpeed: 800, dropsRageOnDeath: true },
-                executioner: { cardType: 'troop', name: 'Executioner', emoji: '🤠', cost: 5, hp: 210, damage: 25, range: 5, speed: 1.0, type: 'ground', attackSpeed: 2400, attackType: 'boomerang' },
-                bowler: { cardType: 'troop', name: 'Bowler', emoji: '🎳', cost: 5, hp: 320, damage: 40, range: 5, speed: 0.8, type: 'ground', attackSpeed: 2500, splashDamage: true, splashRadius: 8, pushback: 1 },
                 guards: { cardType: 'troop', name: 'Guards', emoji: '🛡️', cost: 3, hp: 20, shieldHp: 45, damage: 12, range: 1.6, speed: 1.3, type: 'ground', spawnCount: 3, spawnRadius: 10, attackSpeed: 1200 },
-                miner: { cardType: 'troop', name: 'Miner', emoji: '⛏️', cost: 3, hp: 200, damage: 28, range: 1.5, speed: 1.4, type: 'ground', attackSpeed: 1300, canPlaceAnywhere: true },
+                miner: { cardType: 'troop', name: 'Miner', emoji: '⛏️', cost: 3, hp: 180, damage: 28, range: 1.5, speed: 1.4, type: 'ground', attackSpeed: 1300, canPlaceAnywhere: true },
+                hogRider: { cardType: 'troop', name: 'Hog Rider', emoji: '🐗', cost: 4, hp: 220, damage: 45, range: 1.5, speed: 2.2, type: 'ground', targets: 'buildings', attackSpeed: 1600 },
+                valkyrie: { cardType: 'troop', name: 'Valkyrie', emoji: '👩‍🦰', cost: 4, hp: 190, damage: 32, range: 1.5, speed: 1.3, type: 'ground', attackSpeed: 1500, attackType: 'melee-splash' },
+                musketeer: { cardType: 'troop', name: 'Musketeer', emoji: '💂‍♀️', cost: 4, hp: 120, damage: 40, range: 6, speed: 1.1, type: 'ground', attackSpeed: 1200 },
+                dragon: { cardType: 'troop', name: 'Dragon', emoji: '🐉', cost: 4, hp: 160, damage: 28, range: 4, speed: 1.4, type: 'air', attackSpeed: 1600, splashDamage: true, splashRadius: 10 },
+                miniPekka: { cardType: 'troop', name: 'Mini P.E.K.K.A', emoji: '⚙️', cost: 4, hp: 300, damage: 90, range: 1.5, speed: 1.5, type: 'ground', attackSpeed: 1700 },
+                electroWizard: { cardType: 'troop', name: 'E. Wizard', emoji: '⚡️🧙', cost: 4, hp: 110, damage: 18, range: 5, speed: 1.2, type: 'ground', attackSpeed: 1800, stunDuration: 500 },
+                babyDragon: { cardType: 'troop', name: 'Baby Dragon', emoji: '🦖', cost: 4, hp: 160, damage: 25, range: 3.5, speed: 1.5, type: 'air', attackSpeed: 1500, splashDamage: true, splashRadius: 10 },
+                lumberjack: { cardType: 'troop', name: 'Lumberjack', emoji: '🪓', cost: 4, hp: 120, damage: 45, range: 1.5, speed: 2.4, type: 'ground', attackSpeed: 800, dropsRageOnDeath: true },
+                giant: { cardType: 'troop', name: 'Giant', emoji: '🗿', cost: 5, hp: 500, damage: 28, range: 1.5, speed: 0.8, type: 'ground', targets: 'buildings', attackSpeed: 1700 },
+                wizard: { cardType: 'troop', name: 'Wizard', emoji: '🧙', cost: 5, hp: 110, damage: 45, range: 5.5, speed: 1.1, type: 'ground', attackSpeed: 1600, splashDamage: true, splashRadius: 15 },
+                witch: { cardType: 'troop', name: 'Witch', emoji: '🧹', cost: 5, hp: 130, damage: 18, range: 5, speed: 1.1, type: 'ground', attackSpeed: 1100, splashDamage: true, splashRadius: 8, spawnId: 'skeletons', spawnSpeed: 7000 },
+                prince: { cardType: 'troop', name: 'Prince', emoji: '🐴', cost: 5, hp: 320, damage: 65, range: 1.6, speed: 1.7, type: 'ground', attackSpeed: 1500, canCharge: true },
+                barbarians: { cardType: 'troop', name: 'Barbarians', emoji: '🧔‍♂️', cost: 5, hp: 130, damage: 22, range: 1.5, speed: 1.1, type: 'ground', spawnCount: 4, spawnRadius: 12, attackSpeed: 1400 },
+                executioner: { cardType: 'troop', name: 'Executioner', emoji: '🤠', cost: 5, hp: 210, damage: 30, range: 5, speed: 1.0, type: 'ground', attackSpeed: 2400, attackType: 'boomerang' },
+                bowler: { cardType: 'troop', name: 'Bowler', emoji: '🎳', cost: 5, hp: 320, damage: 55, range: 5, speed: 0.8, type: 'ground', attackSpeed: 2500, splashDamage: true, splashRadius: 8, pushback: 1.5 },
+                royalGiant: { cardType: 'troop', name: 'Royal Giant', emoji: '👑', cost: 6, hp: 550, damage: 35, range: 6.0, speed: 0.7, type: 'ground', targets: 'buildings', attackSpeed: 1800 },
+                eliteBarbarians: { cardType: 'troop', name: 'Elite Barbarians', emoji: '💪', cost: 6, hp: 220, damage: 42, range: 1.5, speed: 2.1, type: 'ground', spawnCount: 2, spawnRadius: 5, attackSpeed: 1500 },
+                pekka: { cardType: 'troop', name: 'P.E.K.K.A', emoji: '🤖', cost: 7, hp: 650, damage: 120, range: 1.6, speed: 0.7, type: 'ground', attackSpeed: 1900 },
+                golem: { cardType: 'troop', name: 'Golem', emoji: '🪨', cost: 8, hp: 850, damage: 40, range: 1.5, speed: 0.6, type: 'ground', targets: 'buildings', attackSpeed: 2500 },
 
                 // Spells
-                fireball: { cardType: 'spell', name: 'Fireball', emoji: '🔥', cost: 4, damage: 70, radius: 15 },
-                arrows: { cardType: 'spell', name: 'Arrows', emoji: '🎯', cost: 3, damage: 35, radius: 25 },
-                rage: { cardType: 'spell', name: 'Rage', emoji: '😡', cost: 2, radius: 20, duration: 6000, speedBoost: 1.35, attackSpeedBoost: 1.35 },
                 zap: { cardType: 'spell', name: 'Zap', emoji: '⚡️', cost: 2, damage: 25, radius: 12, stunDuration: 500 },
                 theLog: { cardType: 'spell', name: 'The Log', emoji: '🌲', cost: 2, damage: 30, width: 20, type: 'groundOnly' },
+                rage: { cardType: 'spell', name: 'Rage', emoji: '😡', cost: 2, radius: 20, duration: 6000, speedBoost: 1.35, attackSpeedBoost: 1.35 },
+                arrows: { cardType: 'spell', name: 'Arrows', emoji: '🎯', cost: 3, damage: 35, radius: 25 },
+                fireball: { cardType: 'spell', name: 'Fireball', emoji: '🔥', cost: 4, damage: 70, radius: 15 },
                 freeze: { cardType: 'spell', name: 'Freeze', emoji: '🥶', cost: 4, radius: 20, duration: 3500 },
-                rocket: { cardType: 'spell', name: 'Rocket', emoji: '🚀', cost: 6, damage: 250, radius: 10 },
+                rocket: { cardType: 'spell', name: 'Rocket', emoji: '🚀', cost: 6, damage: 450, radius: 10 },
                 lightning: { cardType: 'spell', name: 'Lightning', emoji: '🌩️', cost: 6, damage: 160, radius: 20, strikeCount: 3 },
                 
                 // Buildings
                 cannon: { cardType: 'building', name: 'Cannon', emoji: '💣', cost: 3, hp: 280, damage: 35, range: 5.5, attackSpeed: 1100, lifetime: 30, targets: 'ground' },
-                bombTower: { cardType: 'building', name: 'Bomb Tower', emoji: '💣🗼', cost: 4, hp: 380, damage: 45, range: 5, attackSpeed: 1600, lifetime: 35, targets: 'ground', splashDamage: true, splashRadius: 15 },
-                infernoTower: { cardType: 'building', name: 'Inferno Tower', emoji: '🔥🗼', cost: 5, hp: 350, damage: 12, damageRamp: 1.25, maxDamage: 180, range: 6, attackSpeed: 400, lifetime: 40, targets: 'any' },
                 tombstone: { cardType: 'building', name: 'Tombstone', emoji: '🪦', cost: 3, hp: 220, lifetime: 40, spawnSpeed: 2900, spawnId: 'skeletons', spawnOnDeath: 4 },
-                goblinHut: { cardType: 'building', name: 'Goblin Hut', emoji: '🛖', cost: 5, hp: 300, lifetime: 50, spawnSpeed: 4900, spawnId: 'spearGoblins' },
+                bombTower: { cardType: 'building', name: 'Bomb Tower', emoji: '💣🗼', cost: 4, hp: 380, damage: 45, range: 5, attackSpeed: 1600, lifetime: 35, targets: 'ground', splashDamage: true, splashRadius: 15 },
                 mortar: { cardType: 'building', name: 'Mortar', emoji: '🌋', cost: 4, hp: 300, damage: 50, range: 11, minRange: 4, attackSpeed: 5000, lifetime: 30, targets: 'ground', splashDamage: true, splashRadius: 20 },
-                xBow: { cardType: 'building', name: 'X-Bow', emoji: '✖️', cost: 6, hp: 420, damage: 8, range: 11.5, attackSpeed: 300, lifetime: 40, targets: 'ground' },
+                infernoTower: { cardType: 'building', name: 'Inferno Tower', emoji: '🔥🗼', cost: 5, hp: 350, damage: 12, damageRamp: 1.25, maxDamage: 180, range: 6, attackSpeed: 400, lifetime: 40, targets: 'any' },
+                goblinHut: { cardType: 'building', name: 'Goblin Hut', emoji: '🛖', cost: 5, hp: 300, lifetime: 50, spawnSpeed: 4900, spawnId: 'spearGoblins' },
+                xBow: { cardType: 'building', name: 'X-Bow', emoji: '✖️', cost: 6, hp: 420, damage: 10, range: 11.5, attackSpeed: 300, lifetime: 40, targets: 'ground' },
                 elixirCollector: { cardType: 'building', name: 'Elixir Collector', emoji: '💧', cost: 6, hp: 250, lifetime: 70, spawnSpeed: 8500, givesElixir: true }
             };
 
@@ -289,13 +287,11 @@
             let playerHand = [];
             let drawPile = [];
 
-            // --- Game Setup ---
             function initGame() {
                 clearInterval(gameLoopInterval);
                 clearInterval(timerInterval);
                 clearInterval(elixirInterval);
                 clearInterval(aiInterval);
-
                 elixir = 5;
                 aiElixir = 5;
                 gameTime = 180;
@@ -308,64 +304,48 @@
                     <div class="bridge absolute w-1/5 h-1/12 right-1/6 top-1/2 -translate-y-1/2 rounded"></div>
                 `;
                  messageModal.classList.add('hidden');
-                
                 openDeckBuilder();
             }
 
             function startGame() {
                 deckBuilderModal.classList.add('hidden');
-
-                createTower('player', 'king', 50, 88, 2000);
+                createTower('player', 'king', 50, 88, 2500);
                 createTower('player', 'princess', 20, 75, 1000);
                 createTower('player', 'princess', 80, 75, 1000);
-                createTower('ai', 'king', 50, 12, 2000);
+                createTower('ai', 'king', 50, 12, 2500);
                 createTower('ai', 'princess', 20, 25, 1000);
                 createTower('ai', 'princess', 80, 25, 1000);
-
                 playerDeckFull = [...playerDeck].sort(() => Math.random() - 0.5);
                 playerHand = playerDeckFull.slice(0, HAND_SIZE);
                 drawPile = playerDeckFull.slice(HAND_SIZE);
-                
                 drawCards();
                 updateUI();
-
                 clearInterval(gameLoopInterval);
                 clearInterval(timerInterval);
                 clearInterval(elixirInterval);
                 clearInterval(aiInterval);
-
                 gameLoopInterval = setInterval(gameLoop, 1000 / 30);
                 elixirInterval = setInterval(generateElixir, 2000);
-                aiInterval = setInterval(aiLogic, 3000);
+                aiInterval = setInterval(aiLogic, 2500);
                 timerInterval = setInterval(updateTimer, 1000);
                 updateTimer();
             }
 
             function createTower(owner, type, x, y, hp) {
+                const isKing = type === 'king';
                 const tower = {
                     id: nextId++,
-                    objType: 'tower',
-                    owner,
-                    type,
-                    x, y,
-                    hp,
-                    maxHp: hp,
-                    damage: type === 'king' ? 25 : 20,
+                    objType: 'tower', owner, type, x, y, hp, maxHp: hp,
+                    damage: isKing ? 40 : 35,
                     range: 7.5,
-                    attackSpeed: type === 'king' ? 1000 : 800,
-                    lastAttack: 0,
-                    frozenUntil: 0,
-                    stunnedUntil: 0,
-                    rageUntil: 0,
-                    speed: 0,
-                    originalSpeed: 0,
-                    originalAttackSpeed: type === 'king' ? 1000 : 800,
+                    attackSpeed: isKing ? 1000 : 800,
+                    lastAttack: 0, frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
+                    speed: 0, originalSpeed: 0,
+                    originalAttackSpeed: isKing ? 1000 : 800,
                     el: document.createElement('div')
                 };
-                if (type === 'king') {
-                    tower.isActivated = false;
-                }
-
+                if (isKing) tower.isActivated = false;
+                
                 tower.el.className = `tower ${owner} ${type}-tower w-[12%] h-[12%]`;
                 tower.el.style.left = `${x}%`;
                 tower.el.style.top = `${y}%`;
@@ -376,7 +356,6 @@
                 const healthBar = createHealthBar();
                 tower.el.appendChild(healthBar.bar);
                 tower.healthBarInner = healthBar.inner;
-                
                 gameBoard.appendChild(tower.el);
                 gameObjects.push(tower);
             }
@@ -404,7 +383,6 @@
                     cardEl.addEventListener('click', () => removeDeckCard(index));
                     currentDeckEl.appendChild(cardEl);
                 });
-
                 cardCollectionEl.innerHTML = '';
                 Object.keys(CARD_DATA).sort((a,b) => CARD_DATA[a].cost - CARD_DATA[b].cost).forEach(cardId => {
                     const cardData = CARD_DATA[cardId];
@@ -415,7 +393,6 @@
                     }
                     cardCollectionEl.appendChild(cardEl);
                 });
-
                 deckCountEl.textContent = playerDeck.length;
                 startBattleButton.disabled = playerDeck.length !== DECK_SIZE;
             }
@@ -457,7 +434,6 @@
 
             function selectCard(troopId, cardEl) {
                 if (CARD_DATA[troopId].cost > elixir) return;
-                
                 if (selectedTroop === troopId) {
                     selectedTroop = null;
                     cardEl.classList.remove('selected');
@@ -473,17 +449,12 @@
                 const cards = cardHandEl.querySelectorAll('.card');
                 cards.forEach(card => {
                     const cost = CARD_DATA[card.dataset.troop].cost;
-                    if (cost > elixir) {
-                        card.classList.add('disabled');
-                    } else {
-                        card.classList.remove('disabled');
-                    }
+                    card.classList.toggle('disabled', cost > elixir);
                 });
             }
 
             gameBoard.addEventListener('click', (e) => {
                 if (!selectedTroop) return;
-
                 const cardData = CARD_DATA[selectedTroop];
                 if (elixir < cardData.cost) return;
                 
@@ -492,15 +463,10 @@
                 const y = (e.clientY - rect.top) / rect.height * 100;
 
                 if (cardData.cardType === 'troop' || cardData.cardType === 'building') {
-                    // Player can only place on their side, unless the card overrides it (e.g., Miner)
                     if (y < 55 && !cardData.canPlaceAnywhere) return;
-                    
                     elixir -= cardData.cost;
-                    if (cardData.cardType === 'troop') {
-                        createTroop('player', selectedTroop, x, y);
-                    } else {
-                        createBuilding('player', selectedTroop, x, y);
-                    }
+                    if (cardData.cardType === 'troop') createTroop('player', selectedTroop, x, y);
+                    else createBuilding('player', selectedTroop, x, y);
                 } else if (cardData.cardType === 'spell') {
                     elixir -= cardData.cost;
                     castSpell('player', selectedTroop, x, y);
@@ -510,7 +476,6 @@
                 selectedTroop = null;
                 const selectedCardEl = cardHandEl.querySelector('.selected');
                 if (selectedCardEl) selectedCardEl.classList.remove('selected');
-                
                 drawCards();
                 updateUI();
             });
@@ -521,23 +486,18 @@
                     const playedCard = playerHand.splice(playedCardIndex, 1)[0];
                     drawPile.push(playedCard);
                     const nextCard = drawPile.shift();
-                    if (nextCard) {
-                        playerHand.push(nextCard);
-                    }
+                    if (nextCard) playerHand.push(nextCard);
                 }
             }
 
             function createTroop(owner, troopId, x, y) {
                 const data = CARD_DATA[troopId];
                 if (data.spawnIds) {
-                     data.spawnIds.forEach(spawnInfo => {
-                        for (let i = 0; i < spawnInfo.count; i++) {
-                            createTroop(owner, spawnInfo.id, x, y);
-                        }
+                     data.spawnIds.forEach(info => {
+                        for (let i = 0; i < info.count; i++) createTroop(owner, info.id, x, y);
                      });
                     return;
                 }
-
                 if (data.spawnCount > 1) {
                     for (let i = 0; i < data.spawnCount; i++) {
                         const angle = Math.random() * 2 * Math.PI;
@@ -554,24 +514,11 @@
             function createSingleTroop(owner, troopId, x, y) {
                 const data = CARD_DATA[troopId];
                 const troop = {
-                    id: nextId++,
-                    objType: 'troop',
-                    owner,
-                    troopId,
-                    x, y,
-                    hp: data.hp,
-                    shieldHp: data.shieldHp || 0,
-                    maxHp: data.hp,
-                    ...data,
-                    target: null,
-                    lastAttack: 0,
-                    isCharging: false,
-                    chargeDistance: 0,
-                    frozenUntil: 0,
-                    stunnedUntil: 0,
-                    rageUntil: 0,
-                    originalSpeed: data.speed,
-                    originalAttackSpeed: data.attackSpeed,
+                    id: nextId++, objType: 'troop', owner, troopId, x, y,
+                    hp: data.hp, shieldHp: data.shieldHp || 0, maxHp: data.hp, ...data,
+                    target: null, lastAttack: 0, isCharging: false, chargeDistance: 0,
+                    frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
+                    originalSpeed: data.speed, originalAttackSpeed: data.attackSpeed,
                     el: document.createElement('div')
                 };
                 troop.el.className = `troop w-10 h-10`;
@@ -586,11 +533,9 @@
                      troop.el.style.backgroundColor = 'rgba(240, 128, 128, 0.7)';
                     troop.el.style.border = '2px solid #CD5C5C';
                 }
-
                 const healthBar = createHealthBar();
                 troop.el.appendChild(healthBar.bar);
                 troop.healthBarInner = healthBar.inner;
-
                 gameBoard.appendChild(troop.el);
                 gameObjects.push(troop);
             }
@@ -598,25 +543,12 @@
             function createBuilding(owner, buildingId, x, y) {
                 const data = CARD_DATA[buildingId];
                 const building = {
-                    id: nextId++,
-                    objType: 'building',
-                    owner,
-                    buildingId,
-                    x, y,
-                    hp: data.hp,
-                    maxHp: data.hp,
-                    ...data,
-                    target: null,
-                    lastAttack: 0,
-                    lastSpawn: Date.now(),
-                    currentDamage: data.damage,
-                    currentTargetId: null,
-                    frozenUntil: 0,
-                    stunnedUntil: 0,
-                    rageUntil: 0,
-                    speed: 0,
-                    originalSpeed: 0,
-                    originalAttackSpeed: data.attackSpeed || 0,
+                    id: nextId++, objType: 'building', owner, buildingId, x, y,
+                    hp: data.hp, maxHp: data.hp, ...data,
+                    target: null, lastAttack: 0, lastSpawn: Date.now(),
+                    currentDamage: data.damage, currentTargetId: null,
+                    frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
+                    speed: 0, originalSpeed: 0, originalAttackSpeed: data.attackSpeed || 0,
                     el: document.createElement('div')
                 };
                 building.el.className = 'building w-[10%] h-[10%]';
@@ -626,7 +558,6 @@
                 building.el.innerHTML = data.emoji;
                 if(owner === 'player') building.el.style.backgroundColor = '#87CEEB';
                 if(owner === 'ai') building.el.style.backgroundColor = '#F08080';
-
                 const healthBar = createHealthBar();
                 building.el.appendChild(healthBar.bar);
                 building.healthBarInner = healthBar.inner;
@@ -637,7 +568,6 @@
             function castSpell(owner, spellId, x, y) {
                 const spellData = CARD_DATA[spellId];
                 const opponent = owner === 'player' ? 'ai' : 'player';
-                
                 const spellEffectEl = document.createElement('div');
                 spellEffectEl.className = 'absolute border-4 rounded-full pointer-events-none';
                 spellEffectEl.style.left = `${x}%`;
@@ -647,10 +577,8 @@
                 spellEffectEl.style.transform = 'translate(-50%, -50%) scale(0.5)';
                 spellEffectEl.style.opacity = '1';
                 spellEffectEl.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-                
                 const colors = { fireball: 'rgba(255, 100, 0, 0.8)', arrows: 'rgba(150, 150, 150, 0.8)', zap: 'rgba(100, 100, 255, 0.8)', freeze: 'rgba(173, 216, 230, 0.8)', rage: 'rgba(255, 0, 255, 0.8)', rocket: 'rgba(200, 50, 50, 0.8)', lightning: 'rgba(200, 200, 255, 0.9)' };
                 spellEffectEl.style.borderColor = colors[spellId] || 'rgba(255, 255, 255, 0.5)';
-
                 gameBoard.appendChild(spellEffectEl);
                 requestAnimationFrame(() => {
                     spellEffectEl.style.transform = 'translate(-50%, -50%) scale(1)';
@@ -661,25 +589,17 @@
                 if (spellId === 'lightning') {
                     let potentialTargets = gameObjects.filter(obj => obj.owner === opponent && obj.hp > 0 && getDistance({x,y}, obj) <= spellData.radius);
                     potentialTargets.sort((a, b) => b.hp - a.hp);
-                    const finalTargets = potentialTargets.slice(0, spellData.strikeCount);
-                    finalTargets.forEach(target => {
-                         dealSingleDamage({ damage: spellData.damage, stunDuration: 500 }, target);
-                    });
+                    potentialTargets.slice(0, spellData.strikeCount).forEach(target => dealSingleDamage({ damage: spellData.damage, stunDuration: 500 }, target));
                     return;
                 }
-
                 if (spellId === 'theLog') {
-                    const targets = gameObjects.filter(obj => obj.owner === opponent && obj.hp > 0 && obj.type === 'ground');
-                    targets.forEach(target => {
-                        const isinX = Math.abs(target.x - x) < spellData.width / 2;
-                        const isinY = owner === 'player' ? (target.y < y) : (target.y > y);
-                        if (isinX && isinY) {
-                            dealSingleDamage({ damage: spellData.damage }, target);
+                    gameObjects.filter(o => o.owner === opponent && o.hp > 0 && o.type === 'ground').forEach(t => {
+                        if (Math.abs(t.x - x) < spellData.width / 2 && (owner === 'player' ? (t.y < y) : (t.y > y))) {
+                            dealSingleDamage({ damage: spellData.damage }, t);
                         }
                     });
                     return;
                 }
-
                 if (spellId === 'rage' || spellId === 'freeze') {
                     const targets = gameObjects.filter(obj => obj.hp > 0 && getDistance({x, y}, obj) <= spellData.radius);
                     targets.forEach(target => {
@@ -693,11 +613,8 @@
                     });
                     return;
                 }
-
-                const targets = gameObjects.filter(obj => obj.owner === opponent && obj.hp > 0 && getDistance({x, y}, obj) <= spellData.radius);
-                targets.forEach(target => {
-                    dealSingleDamage({ damage: spellData.damage, stunDuration: spellData.stunDuration }, target);
-                });
+                gameObjects.filter(o => o.owner === opponent && o.hp > 0 && getDistance({x, y}, o) <= spellData.radius)
+                    .forEach(t => dealSingleDamage({ damage: spellData.damage, stunDuration: spellData.stunDuration }, t));
             }
 
             function createProjectile(startObj, endObj, options = {}) {
@@ -709,7 +626,6 @@
                     projectileEl.style.height = '15px';
                 }
                 gameBoard.appendChild(projectileEl);
-
                 const startRect = startObj.el.getBoundingClientRect();
                 const endRect = endObj.el.getBoundingClientRect();
                 const boardRect = gameBoard.getBoundingClientRect();
@@ -717,23 +633,17 @@
                 const startY = startRect.top + startRect.height / 2 - boardRect.top;
                 const endX = endRect.left + endRect.width / 2 - boardRect.left;
                 const endY = endRect.top + endRect.height / 2 - boardRect.top;
-                
                 projectileEl.style.left = `${startX}px`;
                 projectileEl.style.top = `${startY}px`;
-
                 const duration = options.duration || 0.3;
                 projectileEl.style.transition = `transform ${duration}s linear`;
                 requestAnimationFrame(() => {
                     projectileEl.style.transform = `translate(${endX - startX}px, ${endY - startY}px)`;
                 });
-
                 setTimeout(() => {
                     projectileEl.remove();
-                    if (startObj.splashDamage) {
-                        dealSplashDamage(startObj, endObj);
-                    } else {
-                        dealSingleDamage(startObj, endObj);
-                    }
+                    if (startObj.splashDamage) dealSplashDamage(startObj, endObj);
+                    else dealSingleDamage(startObj, endObj);
                     if(options.onHit) options.onHit(endObj);
                 }, duration * 1000);
             }
@@ -741,74 +651,52 @@
             function gameLoop() {
                 if(gameTime <= 0) return;
                 const objectsToRemove = [];
-
                 gameObjects.forEach(obj => {
                     if (Date.now() < obj.frozenUntil || Date.now() < obj.stunnedUntil) {
                         if (obj.el.style.filter !== 'brightness(0.5)') obj.el.style.filter = 'brightness(0.5)';
                         return;
-                    } else {
-                        if (obj.el.style.filter === 'brightness(0.5)') obj.el.style.filter = '';
-                    }
+                    } else if (obj.el.style.filter) obj.el.style.filter = '';
 
                     if (obj.rageUntil > 0 && Date.now() > obj.rageUntil) {
                         obj.rageUntil = 0;
                         obj.speed = obj.originalSpeed;
                         obj.attackSpeed = obj.originalAttackSpeed;
                     }
-
-                    if (obj.objType === 'building' && obj.lifetime) {
-                        obj.hp -= obj.maxHp / (obj.lifetime * 30);
-                    }
-                    
+                    if (obj.objType === 'building' && obj.lifetime) obj.hp -= obj.maxHp / (obj.lifetime * 30);
                     if (obj.objType === 'building' && obj.givesElixir && Date.now() - obj.lastSpawn > obj.spawnSpeed) {
                         obj.lastSpawn = Date.now();
                         if (obj.owner === 'player' && elixir < maxElixir) elixir++;
                         if (obj.owner === 'ai' && aiElixir < maxElixir) aiElixir++;
                         updateUI();
                     }
-
-                    if ((obj.hp + obj.shieldHp) <= 0) {
-                        if (obj.dropsRageOnDeath) {
-                           castSpell(obj.owner, 'rage', obj.x, obj.y);
-                        }
+                    if ((obj.hp + (obj.shieldHp || 0)) <= 0) {
+                        if (obj.dropsRageOnDeath) castSpell(obj.owner, 'rage', obj.x, obj.y);
                         if (obj.spawnOnDeath) {
-                            for (let i = 0; i < obj.spawnOnDeath; i++) {
-                                createTroop(obj.owner, obj.spawnId, obj.x, obj.y);
-                            }
+                            for (let i = 0; i < obj.spawnOnDeath; i++) createTroop(obj.owner, obj.spawnId, obj.x, obj.y);
                         }
                         objectsToRemove.push(obj);
                         return;
                     }
-
                     if (obj.objType === 'troop') {
                         if (obj.spawnId && (!obj.lastSpawn || Date.now() - obj.lastSpawn > obj.spawnSpeed)) {
                             obj.lastSpawn = Date.now();
                             createTroop(obj.owner, obj.spawnId, obj.x, obj.y);
                         }
-
                         findTarget(obj);
                         if (obj.target) {
-                            const dist = getDistance(obj, obj.target);
-                            if (dist <= obj.range * 10) {
+                            if (getDistance(obj, obj.target) <= obj.range * 10) {
                                 attack(obj, obj.target);
                                 obj.chargeDistance = 0;
                                 if (obj.isCharging) {
                                     obj.isCharging = false;
                                     obj.el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
                                 }
-                            } else {
-                                move(obj, obj.target);
-                            }
-                        } else {
-                            let targetY = obj.owner === 'player' ? -10 : 110;
-                            move(obj, {x: obj.x, y: targetY});
-                        }
+                            } else move(obj, obj.target);
+                        } else move(obj, {x: obj.x, y: obj.owner === 'player' ? -10 : 110});
                     } else if (obj.objType === 'tower' || (obj.objType === 'building' && obj.damage > 0)) {
-                        let canAttack = true;
-                        if (obj.type === 'king' && !obj.isActivated) {
-                            canAttack = false;
-                            const isEnemyNearby = gameObjects.some(e => e.owner !== obj.owner && e.objType === 'troop' && getDistance(obj, e) <= obj.range * 10);
-                            if (isEnemyNearby) {
+                        let canAttack = !(obj.type === 'king' && !obj.isActivated);
+                        if (!canAttack) {
+                            if (gameObjects.some(e => e.owner !== obj.owner && e.objType === 'troop' && getDistance(obj, e) <= obj.range * 10)) {
                                 obj.isActivated = true;
                                 canAttack = true;
                             }
@@ -816,11 +704,8 @@
                         if (canAttack) {
                             findTarget(obj);
                             if (obj.target) {
-                                if (obj.minRange && getDistance(obj, obj.target) < obj.minRange * 10) {
-                                    // Target is too close for Mortar
-                                } else {
-                                    attack(obj, obj.target);
-                                }
+                                if (obj.minRange && getDistance(obj, obj.target) < obj.minRange * 10) {}
+                                else attack(obj, obj.target);
                             }
                         }
                     } else if (obj.objType === 'building' && obj.spawnId) {
@@ -829,15 +714,12 @@
                             createTroop(obj.owner, obj.spawnId, obj.x, obj.y);
                         }
                     }
-
                     obj.el.style.left = `${obj.x}%`;
                     obj.el.style.top = `${obj.y}%`;
-                    
                     const healthPercentage = (obj.hp / obj.maxHp) * 100;
                     obj.healthBarInner.style.width = `${healthPercentage}%`;
-                    obj.healthBarInner.style.backgroundColor = obj.shieldHp > 0 ? '#4299E1' : '#4CAF50';
+                    obj.healthBarInner.style.backgroundColor = (obj.shieldHp || 0) > 0 ? '#4299E1' : '#4CAF50';
                 });
-                
                 objectsToRemove.forEach(obj => {
                     obj.el.remove();
                     gameObjects = gameObjects.filter(g => g.id !== obj.id);
@@ -848,63 +730,48 @@
 
             function dealSplashDamage(attacker, primaryTarget) {
                  if (!primaryTarget) return;
-                const enemies = gameObjects.filter(o => o.owner !== attacker.owner && o.hp > 0);
-                enemies.forEach(enemy => {
-                    if (getDistance(primaryTarget, enemy) < attacker.splashRadius) {
-                        dealSingleDamage(attacker, enemy);
-                    }
-                });
+                gameObjects.filter(o => o.owner !== attacker.owner && o.hp > 0 && getDistance(primaryTarget, o) < attacker.splashRadius)
+                    .forEach(enemy => dealSingleDamage(attacker, enemy));
             }
             
             function dealSingleDamage(attacker, target) {
                 if (!target) return;
-                
                 let damageDealt = attacker.damage;
                 if (target.shieldHp > 0) {
                     target.shieldHp -= damageDealt;
                     if (target.shieldHp < 0) {
-                        target.hp += target.shieldHp; // Apply remaining damage to health
+                        target.hp += target.shieldHp;
                         target.shieldHp = 0;
                     }
-                } else {
-                    target.hp -= damageDealt;
-                }
+                } else target.hp -= damageDealt;
                 
-                if(attacker.stunDuration) {
-                    target.stunnedUntil = Date.now() + attacker.stunDuration;
+                if(attacker.stunDuration) target.stunnedUntil = Date.now() + attacker.stunDuration;
+                
+                if (attacker.pushback && target.type === 'ground' && target.objType === 'troop') {
+                    const angle = Math.atan2(target.y - attacker.y, target.x - attacker.x);
+                    target.x += Math.cos(angle) * attacker.pushback * 5;
+                    target.y += Math.sin(angle) * attacker.pushback * 5;
                 }
                 
                 target.el.style.filter = 'brightness(2)';
-                setTimeout(() => target.el.style.filter = '', 100);
+                setTimeout(() => { if (target.el) target.el.style.filter = ''; }, 100);
             }
 
             function findTarget(attacker) {
                 let potentialTargets = gameObjects.filter(obj => 
-                    obj.owner !== attacker.owner && (obj.hp + obj.shieldHp) > 0 &&
+                    obj.owner !== attacker.owner && (obj.hp + (obj.shieldHp || 0)) > 0 &&
                     (obj.objType === 'troop' || obj.objType === 'tower' || obj.objType === 'building')
                 );
-                
-                if (attacker.targets === 'ground') {
-                    potentialTargets = potentialTargets.filter(t => t.type !== 'air');
-                } else if (attacker.targets === 'air') {
-                    potentialTargets = potentialTargets.filter(t => t.type === 'air');
-                }
-
+                if (attacker.targets === 'ground') potentialTargets = potentialTargets.filter(t => t.type !== 'air');
+                else if (attacker.targets === 'air') potentialTargets = potentialTargets.filter(t => t.type === 'air');
                 if (attacker.targets === 'buildings') {
                     const buildings = potentialTargets.filter(t => t.objType === 'tower' || t.objType === 'building');
                     if (buildings.length > 0) potentialTargets = buildings;
                 }
-
-                let closestTarget = null;
-                let minDistance = Infinity;
-                potentialTargets.forEach(target => {
-                    const dist = getDistance(attacker, target);
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        closestTarget = target;
-                    }
-                });
-                attacker.target = closestTarget;
+                attacker.target = potentialTargets.reduce((closest, current) => {
+                    const dist = getDistance(attacker, current);
+                    return (dist < closest.dist) ? { dist, target: current } : closest;
+                }, { dist: Infinity, target: null }).target;
             }
             
             function move(obj, target) {
@@ -912,7 +779,6 @@
                  const distance = obj.speed * 0.2;
                  obj.x += Math.cos(angle) * distance; 
                  obj.y += Math.sin(angle) * distance;
-
                  if (obj.canCharge) {
                     obj.chargeDistance += distance;
                     if (obj.chargeDistance > 30 && !obj.isCharging) {
@@ -928,31 +794,25 @@
                 if (now - attacker.lastAttack > attackSpeed) {
                     attacker.lastAttack = now;
                     let finalAttacker = {...attacker};
-
                     if (attacker.isCharging) finalAttacker.damage *= 2;
-                    
                     if (attacker.damageRamp) {
-                        if (attacker.currentTargetId === target.id) {
-                            attacker.currentDamage = Math.min(attacker.maxDamage, attacker.currentDamage * attacker.damageRamp);
-                        } else {
-                            attacker.currentDamage = attacker.damage;
-                        }
+                        if (attacker.currentTargetId === target.id) attacker.currentDamage = Math.min(attacker.maxDamage, attacker.currentDamage * attacker.damageRamp);
+                        else attacker.currentDamage = attacker.damage;
                         finalAttacker.damage = attacker.currentDamage;
                         attacker.currentTargetId = target.id;
                     }
-
                     if (attacker.attackType === 'boomerang') {
                         createProjectile(finalAttacker, target, { onHit: (primaryTarget) => {
                             setTimeout(() => dealSingleDamage(finalAttacker, primaryTarget), 150);
                         }});
                     } else if (attacker.attackType === 'melee-splash') {
-                        const enemies = gameObjects.filter(o => o.owner !== attacker.owner && o.hp > 0 && getDistance(finalAttacker, o) <= finalAttacker.range * 10);
-                        enemies.forEach(enemy => dealSingleDamage(finalAttacker, enemy));
+                        gameObjects.filter(o => o.owner !== attacker.owner && o.hp > 0 && getDistance(finalAttacker, o) <= finalAttacker.range * 10)
+                            .forEach(enemy => dealSingleDamage(finalAttacker, enemy));
                     } else if (attacker.range > 2.0) {
-                        let projectileOptions = {};
-                        if (attacker.name === 'Mortar' || attacker.name === 'Bowler') projectileOptions.duration = 1.0;
-                        if (attacker.name === 'Bowler') projectileOptions.type = 'boulder';
-                        createProjectile(finalAttacker, target, projectileOptions);
+                        let pOptions = {};
+                        if (attacker.name === 'Mortar' || attacker.name === 'Bowler') pOptions.duration = 1.0;
+                        if (attacker.name === 'Bowler') pOptions.type = 'boulder';
+                        createProjectile(finalAttacker, target, pOptions);
                     } else {
                         dealSingleDamage(finalAttacker, target);
                     }
@@ -992,28 +852,30 @@
                 if(gameTime <= 0) return;
                 const placeableCards = Object.keys(CARD_DATA).filter(id => CARD_DATA[id].cost <= aiElixir);
                 if (placeableCards.length === 0) return;
-
                 const randomCardId = placeableCards[Math.floor(Math.random() * placeableCards.length)];
                 const cardData = CARD_DATA[randomCardId];
-                
-                const deployChance = aiElixir > 7 ? 0.8 : 0.4;
-                if (Math.random() < deployChance) { 
+                if (Math.random() < (aiElixir > 7 ? 0.8 : 0.4)) { 
                     aiElixir -= cardData.cost;
                     if (cardData.cardType === 'troop' || cardData.cardType === 'building') {
-                        const x = Math.random() * 80 + 10;
-                        const y = Math.random() * 40 + 5;
+                        let x = Math.random() * 80 + 10;
+                        let y = Math.random() * 40 + 5;
+                        if (cardData.canPlaceAnywhere) y = Math.random() * 40 + 55;
+                        if (cardData.name === 'X-Bow' || cardData.name === 'Mortar') {
+                            y = 35;
+                            x = Math.random() > 0.5 ? 25 : 75;
+                        }
                         if (cardData.cardType === 'troop') createTroop('ai', randomCardId, x, y);
                         else createBuilding('ai', randomCardId, x, y);
                     } else if (cardData.cardType === 'spell') {
                         const playerUnits = gameObjects.filter(o => o.owner === 'player' && o.y < 50);
                         if (playerUnits.length > 0) {
-                            const targetUnit = playerUnits[Math.floor(Math.random() * playerUnits.length)];
-                            castSpell('ai', randomCardId, targetUnit.x, targetUnit.y);
+                            const target = playerUnits[Math.floor(Math.random() * playerUnits.length)];
+                            castSpell('ai', randomCardId, target.x, target.y);
                         } else {
                             const playerTowers = gameObjects.filter(o => o.owner === 'player' && o.objType === 'tower');
                             if (playerTowers.length > 0) {
-                                const targetTower = playerTowers[Math.floor(Math.random() * playerTowers.length)];
-                                castSpell('ai', randomCardId, targetTower.x, targetTower.y);
+                                const target = playerTowers[Math.floor(Math.random() * playerTowers.length)];
+                                castSpell('ai', randomCardId, target.x, target.y);
                             }
                         }
                     }
@@ -1021,10 +883,8 @@
             }
 
             function updateTowerCounts() {
-                const playerTowerCount = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'player').length;
-                const aiTowerCount = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'ai').length;
-                playerTowersEl.textContent = playerTowerCount;
-                aiTowersEl.textContent = aiTowerCount;
+                playerTowersEl.textContent = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'player').length;
+                aiTowersEl.textContent = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'ai').length;
             }
 
             function checkGameOver() {
@@ -1037,28 +897,24 @@
             function endGame(result) {
                 clearInterval(gameLoopInterval);
                 clearInterval(timerInterval);
-                
-                let title = '';
-                let text = '';
-                
+                let title = '', text = '';
                 if (result) {
                      title = result;
                      text = "The King Tower has been destroyed!";
                 } else {
-                    const playerTowerCount = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'player').length;
-                    const aiTowerCount = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'ai').length;
-                    if(playerTowerCount > aiTowerCount) {
+                    const pTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'player').length;
+                    const aTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'ai').length;
+                    if(pTowers > aTowers) {
                         title = 'You Win on Points!';
-                        text = `You had ${playerTowerCount} towers remaining to the AI's ${aiTowerCount}.`;
-                    } else if (aiTowerCount > playerTowerCount) {
+                        text = `You had ${pTowers} towers remaining to the AI's ${aTowers}.`;
+                    } else if (aTowers > pTowers) {
                          title = 'AI Wins on Points!';
-                         text = `The AI had ${aiTowerCount} towers remaining to your ${playerTowerCount}.`;
+                         text = `The AI had ${aTowers} towers remaining to your ${pTowers}.`;
                     } else {
                         title = 'It\'s a Draw!';
                         text = 'Both sides had the same number of towers remaining.';
                     }
                 }
-                
                 messageTitle.textContent = title;
                 messageText.textContent = text;
                 messageModal.classList.remove('hidden');
@@ -1074,7 +930,6 @@
             }
 
             initGame();
-
         });
     </script>
 </body>
