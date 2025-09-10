@@ -8,73 +8,69 @@
   <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
   <style>
     :root { --board-bg: #4CAF50; }
-    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; touch-action:none; }
-    .font-bangers { font-family:'Bangers',cursive; }
-
-    #game-board {
-      background-color: var(--board-bg);
-      background-image: linear-gradient(to right, rgba(0,0,0,0.08) 1px, transparent 1px),
-                        linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
-      background-size: 20px 20px;
-      position: relative;
-      overflow: hidden;
-      border: 4px solid #8B4513;
-    }
-
-    .bridge { background-color: #DAA520; border:2px solid #8B4513; z-index:1; }
-    .river { background: linear-gradient(to right,#4682B4,#87CEEB); z-index:0; }
+    body{ font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; touch-action:none; margin:0; }
+    .font-bangers{ font-family:'Bangers',cursive; }
+    #game-board{ background-color:var(--board-bg); background-image: linear-gradient(to right, rgba(0,0,0,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px); background-size:20px 20px; position:relative; overflow:hidden; border:4px solid #8B4513; }
+    .bridge{ background-color:#DAA520; border:2px solid #8B4513; z-index:1; }
+    .river{ background:linear-gradient(to right,#4682B4,#87CEEB); z-index:0; }
     .tower, .building, .troop { position:absolute; top:0; left:0; transform:translate(-50%,-50%); will-change: transform, left, top, opacity; }
-    .tower { z-index:10; display:flex; align-items:center; justify-content:center; flex-direction:column; border-radius:50% 50% 10% 10% / 20% 20% 10% 10%; box-shadow:0 4px 8px rgba(0,0,0,0.3); }
-    .troop { z-index:20; display:flex; align-items:center; justify-content:center; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2); transition: filter 80ms linear; }
-    .health-bar { position:absolute; bottom:-8px; left:10%; width:80%; height:5px; background:#E0E0E0; border-radius:2.5px; overflow:hidden; }
-    .health-bar-inner { height:100%; background:#4CAF50; border-radius:2.5px; transition: width 120ms linear; }
-    .projectile { position:absolute; border-radius:50%; width:10px; height:10px; z-index:50; box-shadow:0 0 5px #FFD700; pointer-events:none; transform:translateZ(0); transition: transform 300ms linear, opacity 300ms linear; }
-
-    .card {
-      transition: transform .18s, box-shadow .18s;
-      cursor:pointer;
-      user-select:none;
-      font-size: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #2D2D2D;
-      border-radius: 0.5rem;
-      padding: 0.5rem;
-      color: white;
-    }
-    .card.selected { transform: translateY(-12px) scale(1.08); box-shadow: 0 0 20px rgba(76,175,80,0.85); }
-    .card.disabled { filter: grayscale(100%); cursor:not-allowed; }
-    .card:hover { transform: translateY(-6px) scale(1.04); box-shadow: 0 0 12px rgba(76,175,80,0.5); }
-
-    #message-modal { transition: opacity .28s ease-in-out; }
-    #message-box { animation: slide-in 0.45s forwards; }
+    .tower{ z-index:10; display:flex; align-items:center; justify-content:center; flex-direction:column; border-radius:50% 50% 10% 10% / 20% 20% 10% 10%; box-shadow:0 4px 8px rgba(0,0,0,0.3); }
+    .troop{ z-index:20; display:flex; align-items:center; justify-content:center; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2); transition: filter 80ms linear; }
+    .health-bar{ position:absolute; bottom:-8px; left:10%; width:80%; height:5px; background:#E0E0E0; border-radius:2.5px; overflow:hidden; }
+    .health-bar-inner{ height:100%; background:#4CAF50; border-radius:2.5px; transition: width 120ms linear; }
+    .projectile{ position:absolute; border-radius:50%; width:10px; height:10px; z-index:50; box-shadow:0 0 5px #FFD700; pointer-events:none; transform:translateZ(0); transition: transform 300ms linear, opacity 300ms linear; }
+    .card{ transition:transform .18s, box-shadow .18s; cursor:pointer; user-select:none; background:#333; color:white; font-weight:bold; display:flex; align-items:center; justify-content:center; border-radius:8px; padding:8px; font-size:18px; text-align:center; }
+    .card.selected{ transform: translateY(-12px) scale(1.06); box-shadow: 0 0 20px rgba(76,175,80,0.85); }
+    .card.disabled{ filter:grayscale(100%); cursor:not-allowed; }
+    #message-modal{ transition: opacity .28s ease-in-out; }
+    #message-box{ animation: slide-in 0.45s forwards; }
     @keyframes slide-in{ 0%{ transform:translateY(-50px); opacity:0 } 100%{ transform:translateY(0); opacity:1 } }
+    /* Scrollbars for deck builder */
+    #card-collection { scrollbar-width: thin; scrollbar-color: #888 #222; }
+    #card-collection::-webkit-scrollbar { width: 8px; }
+    #card-collection::-webkit-scrollbar-thumb { background-color: #888; border-radius: 4px; }
+    #card-collection::-webkit-scrollbar-track { background: #222; border-radius: 4px; }
+    /* Title screen */
+    #title-screen { position:fixed; inset:0; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100; }
+    #title-screen button { margin:8px; background:#4CAF50; padding:16px 32px; font-size:24px; font-family:'Bangers',cursive; border:none; border-radius:12px; cursor:pointer; color:white; transition:0.2s; }
+    #title-screen button:hover { background:#45a049; }
+    /* Deck tabs */
+    .deck-tab { padding:6px 12px; border:2px solid #444; border-radius:6px; cursor:pointer; margin-right:4px; background:#333; color:white; font-weight:bold; }
+    .deck-tab.active { border-color:#4CAF50; background:#555; }
   </style>
 </head>
 <body class="bg-gray-800 flex flex-col items-center justify-center min-h-screen p-4 text-white">
-  <h1 class="text-4xl md:text-6xl font-bangers text-yellow-400 mb-4 tracking-wider">TOWER DUEL</h1>
 
-  <div class="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-[9/16] relative">
-    <div id="game-board" class="w-full h-full rounded-lg shadow-2xl">
-      <div class="river absolute w-full h-1/12 top-1/2 -translate-y-1/2"></div>
-      <div class="bridge absolute w-1/5 h-1/12 left-1/6 top-1/2 -translate-y-1/2 rounded"></div>
-      <div class="bridge absolute w-1/5 h-1/12 right-1/6 top-1/2 -translate-y-1/2 rounded"></div>
-    </div>
-
-    <div class="absolute top-2 left-2 text-lg font-bold bg-black bg-opacity-50 px-2 py-1 rounded">AI: <span id="ai-towers">3</span></div>
-    <div class="absolute top-2 right-2 text-lg font-bold bg-black bg-opacity-50 px-2 py-1 rounded">Time: <span id="timer">180</span>s</div>
-    <div class="absolute bottom-2 left-2 text-lg font-bold bg-black bg-opacity-50 px-2 py-1 rounded">You: <span id="player-towers">3</span></div>
+  <!-- Title Screen -->
+  <div id="title-screen">
+    <h1 class="text-6xl font-bangers text-yellow-400 mb-8">TOWER DUEL</h1>
+    <button id="start-button">Start Battle</button>
+    <button id="deck-button">Deck Builder</button>
+    <button id="options-button">Options</button>
   </div>
 
-  <div class="w-full max-w-sm md:max-w-md lg:max-w-lg mt-4">
-    <div class="w-full bg-gray-600 rounded-full h-6 border-2 border-purple-400 mb-2">
-      <div id="elixir-bar-fill" class="bg-purple-600 h-full rounded-full" style="width:30%"></div>
-      <div class="relative -top-6 w-full h-full flex items-center justify-center"><span id="elixir-count" class="font-bold text-lg">3</span> / 10</div>
+  <!-- Game Board Container -->
+  <div id="game-container" class="hidden w-full max-w-4xl flex flex-col items-center">
+
+    <div class="w-full max-w-lg aspect-[9/16] relative">
+      <div id="game-board" class="w-full h-full rounded-lg shadow-2xl">
+        <div class="river absolute w-full h-1/12 top-1/2 -translate-y-1/2"></div>
+        <div class="bridge absolute w-1/5 h-1/12 left-1/6 top-1/2 -translate-y-1/2 rounded"></div>
+        <div class="bridge absolute w-1/5 h-1/12 right-1/6 top-1/2 -translate-y-1/2 rounded"></div>
+      </div>
+
+      <div class="absolute top-2 left-2 text-lg font-bold bg-black bg-opacity-50 px-2 py-1 rounded">AI: <span id="ai-towers">3</span></div>
+      <div class="absolute top-2 right-2 text-lg font-bold bg-black bg-opacity-50 px-2 py-1 rounded">Time: <span id="timer">180</span>s</div>
+      <div class="absolute bottom-2 left-2 text-lg font-bold bg-black bg-opacity-50 px-2 py-1 rounded">You: <span id="player-towers">3</span></div>
     </div>
 
-    <div id="card-hand" class="grid grid-cols-4 gap-2"></div>
+    <div class="w-full max-w-lg mt-4">
+      <div class="w-full bg-gray-600 rounded-full h-6 border-2 border-purple-400 mb-2">
+        <div id="elixir-bar-fill" class="bg-purple-600 h-full rounded-full" style="width:30%"></div>
+        <div class="relative -top-6 w-full h-full flex items-center justify-center"><span id="elixir-count" class="font-bold text-lg">3</span> / 10</div>
+      </div>
+      <div id="card-hand" class="grid grid-cols-4 gap-2"></div>
+    </div>
   </div>
 
   <!-- Message Modal -->
@@ -86,28 +82,25 @@
     </div>
   </div>
 
-  <!-- Deck builder -->
-  <div id="deck-builder-modal" class="fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50 p-6 overflow-auto">
-    <div class="bg-gray-700 p-6 rounded-2xl shadow-2xl w-full max-w-5xl border-4 border-yellow-400 flex flex-col gap-6">
+  <!-- Deck Builder Modal -->
+  <div id="deck-builder-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50 p-4 overflow-y-auto">
+    <div class="bg-gray-700 p-6 rounded-lg shadow-2xl w-full max-w-3xl border-4 border-yellow-400">
+      <h2 class="text-3xl font-bangers text-yellow-400 mb-4 text-center">Build Your Deck</h2>
 
-      <h2 class="text-4xl md:text-5xl font-bangers text-yellow-400 text-center">Build Your Deck</h2>
-
-      <!-- Current Deck -->
-      <div>
-        <h3 class="font-bold text-xl md:text-2xl mb-2 text-purple-300">Your Deck (<span id="deck-count">0</span>/8)</h3>
-        <div id="current-deck" class="grid grid-cols-4 sm:grid-cols-8 gap-3 bg-gray-800 p-4 rounded-md min-h-[140px] border-2 border-gray-600"></div>
+      <!-- Deck tabs -->
+      <div class="flex mb-4">
+        <div class="deck-tab active" data-deck="0">Deck 1</div>
+        <div class="deck-tab" data-deck="1">Deck 2</div>
+        <div class="deck-tab" data-deck="2">Deck 3</div>
       </div>
 
-      <!-- Card Collection -->
-      <div>
-        <h3 class="font-bold text-xl md:text-2xl mb-2 text-green-300">Card Collection</h3>
-        <div id="card-collection" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 bg-gray-800 p-4 rounded-md max-h-[400px] overflow-y-auto border-2 border-gray-600"></div>
-      </div>
+      <h3 class="font-bold text-lg mb-2 text-purple-300">Your Deck (<span id="deck-count">0</span>/8)</h3>
+      <div id="current-deck" class="grid grid-cols-8 gap-2 bg-gray-800 p-2 rounded-md min-h-[120px] mb-4 border-2 border-gray-600"></div>
 
-      <button id="start-battle-button" class="mt-4 md:mt-6 w-full md:w-1/2 self-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl text-xl font-bangers tracking-wider disabled:bg-gray-500 disabled:cursor-not-allowed">
-        Start Battle
-      </button>
+      <h3 class="font-bold text-lg mb-2 text-green-300">Card Collection</h3>
+      <div id="card-collection" class="grid grid-cols-6 gap-2 bg-gray-800 p-2 rounded-md max-h-[400px] overflow-y-auto"></div>
 
+      <button id="start-battle-button" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-xl font-bangers tracking-wider disabled:bg-gray-500 disabled:cursor-not-allowed">Start Battle</button>
     </div>
   </div>
 

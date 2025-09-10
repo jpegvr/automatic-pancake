@@ -1,6 +1,12 @@
-/* src/main.js */
+/* Complete Tower Duel JS - Deck builder, multiple decks, title screen, battle, all cards */
 document.addEventListener('DOMContentLoaded', () => {
-  // ---------------- Elements ----------------
+
+  // -------------------- Elements --------------------
+  const titleScreen = document.getElementById('title-screen');
+  const startButton = document.getElementById('start-button');
+  const deckButton = document.getElementById('deck-button');
+
+  const gameContainer = document.getElementById('game-container');
   const gameBoard = document.getElementById('game-board');
   const elixirBarFill = document.getElementById('elixir-bar-fill');
   const elixirCountEl = document.getElementById('elixir-count');
@@ -17,186 +23,215 @@ document.addEventListener('DOMContentLoaded', () => {
   const deckBuilderModal = document.getElementById('deck-builder-modal');
   const currentDeckEl = document.getElementById('current-deck');
   const cardCollectionEl = document.getElementById('card-collection');
-  const startBattleButton = document.getElementById('start-battle-button');
   const deckCountEl = document.getElementById('deck-count');
+  const startBattleButton = document.getElementById('start-battle-button');
+  const deckTabs = document.querySelectorAll('.deck-tab');
 
-  // ---------------- Game state ----------------
-  let elixir = 5, aiElixir = 5, maxElixir = 10;
-  let selectedTroop = null;
-  let gameTime = 180;
-  let gameObjects = [];
-  let nextId = 0;
-  const DECK_SIZE = 8, HAND_SIZE = 4;
-  let playerDeckFull = [];
-  let playerDeck = [];
-  let playerHand = [];
-  let drawPile = [];
-  let running = false;
-  let lastTimestamp = performance.now();
+  // -------------------- Cards --------------------
+  const allCards = [
+    {name:'Knight', emoji:'🗡️', cost:3, type:'troop', hp:300, dmg:50, speed:1},
+    {name:'Archers', emoji:'🏹', cost:3, type:'troop', hp:150, dmg:25, speed:1.5},
+    {name:'Giant', emoji:'💪', cost:5, type:'troop', hp:600, dmg:60, speed:0.7},
+    {name:'Goblin', emoji:'👹', cost:2, type:'troop', hp:100, dmg:20, speed:2},
+    {name:'Valkyrie', emoji:'🪓', cost:4, type:'troop', hp:400, dmg:50, speed:1},
+    {name:'Baby Dragon', emoji:'🐉', cost:4, type:'troop', hp:300, dmg:40, speed:1},
+    {name:'Wizard', emoji:'🔥', cost:5, type:'troop', hp:250, dmg:80, speed:1},
+    {name:'Prince', emoji:'🏇', cost:5, type:'troop', hp:350, dmg:70, speed:1.2},
+    {name:'Hog Rider', emoji:'🏹🐴', cost:4, type:'troop', hp:300, dmg:50, speed:1.5},
+    {name:'Cannon', emoji:'🛡️', cost:3, type:'building', hp:500, dmg:30, speed:1},
+    {name:'Tesla', emoji:'⚡', cost:4, type:'building', hp:400, dmg:40, speed:1},
+    {name:'Arrows', emoji:'🏹💨', cost:3, type:'spell', hp:0, dmg:100, speed:0},
+    {name:'Fireball', emoji:'🔥💥', cost:4, type:'spell', hp:0, dmg:150, speed:0},
+    {name:'Zap', emoji:'⚡💥', cost:2, type:'spell', hp:0, dmg:50, speed:0},
+    {name:'Ice Spirit', emoji:'❄️', cost:1, type:'troop', hp:100, dmg:20, speed:2},
+    {name:'Skeletons', emoji:'💀', cost:1, type:'troop', hp:50, dmg:15, speed:2.5},
+    {name:'Mega Minion', emoji:'🦇', cost:3, type:'troop', hp:200, dmg:60, speed:1.5},
+    {name:'Mini P.E.K.K.A', emoji:'🤖', cost:4, type:'troop', hp:400, dmg:120, speed:1},
+    {name:'Balloon', emoji:'🎈💣', cost:5, type:'troop', hp:250, dmg:200, speed:1},
+    {name:'Goblins Barrel', emoji:'🛢️👹', cost:3, type:'spell', hp:0, dmg:50, speed:0},
+    {name:'Lightning', emoji:'⚡💥⚡', cost:6, type:'spell', hp:0, dmg:300, speed:0},
+    {name:'Miner', emoji:'⛏️', cost:3, type:'troop', hp:250, dmg:60, speed:1.5},
+    {name:'Elixir Collector', emoji:'🧪', cost:6, type:'building', hp:500, dmg:0, speed:0},
+    {name:'Baby Dragon', emoji:'🐲', cost:4, type:'troop', hp:300, dmg:40, speed:1},
+    // you can add even more cards here; currently 24+
+  ];
 
-  // ---------------- Card data ----------------
-  const CARD_DATA = {
-    knight: { cardType: 'troop', name: 'Knight', emoji: '⚔️', cost: 3, hp: 155, damage: 20, range: 1.5, speed: 1.2, type: 'ground', attackSpeed: 1200 },
-    archer: { cardType: 'troop', name: 'Archer', emoji: '🏹', cost: 3, hp: 65, damage: 13, range: 5, speed: 1.2, type: 'ground', attackSpeed: 1000 },
-    giant: { cardType: 'troop', name: 'Giant', emoji: '🗿', cost: 5, hp: 500, damage: 28, range: 1.5, speed: 0.8, type: 'ground', targets: 'buildings', attackSpeed: 1700 },
-    fireball: { cardType: 'spell', name: 'Fireball', emoji: '🔥', cost: 4, damage: 70, radius: 15 },
-    arrows: { cardType: 'spell', name: 'Arrows', emoji: '🎯', cost: 3, damage: 35, radius: 25 }
-    // Add more cards as needed
-  };
+  // -------------------- State --------------------
+  let currentDeck = 0;
+  const decks = [[], [], []];
+  let hand = [];
+  let elixir = 3;
+  let elixirMax = 10;
+  let gameTimer = 180;
+  let timerInterval;
+  let playerTowers = 3;
+  let aiTowers = 3;
 
-  const cache = { boardRect: null, lastUI: { elixir: null, playerTowers: null, aiTowers: null } };
-
-  // ---------------- Utilities ----------------
-  const createEl = className => { const d = document.createElement('div'); d.className = className; return d; };
-  const createHealthBar = () => {
-    const bar = createEl('health-bar');
-    const inner = createEl('health-bar-inner');
-    bar.appendChild(inner);
-    return { bar, inner };
-  };
-
-  function setupEntityElement(entity) {
-    entity.el.style.position = 'absolute';
-    entity.el.style.transform = 'translate(-50%,-50%)';
-    const hb = createHealthBar();
-    entity.el.appendChild(hb.bar);
-    entity.healthBarInner = hb.inner;
-    gameBoard.appendChild(entity.el);
-    updateEntityVisual(entity);
-  }
-
-  function updateEntityVisual(entity) {
-    if (!cache.boardRect) cache.boardRect = gameBoard.getBoundingClientRect();
-    const br = cache.boardRect;
-    const px = br.width * (entity.x / 100);
-    const py = br.height * (entity.y / 100);
-    entity.el.style.transform = `translate3d(${px}px,${py}px,0) translate(-50%,-50%)`;
-    if(entity.healthBarInner) {
-      const perc = Math.max(0, Math.min(100, (entity.hp / entity.maxHp) * 100));
-      entity.healthBarInner.style.width = `${perc}%`;
-    }
-  }
-
-  function getDistance(a,b){ if(!a||!b) return Infinity; return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2); }
-
-  function createSingleTroop(owner, troopId, x, y) {
-    const data = CARD_DATA[troopId];
-    if(!data) return;
-    const troop = { id: nextId++, objType:'troop', owner, troopId, x, y,
-      hp:data.hp, maxHp:data.hp, target:null, lastAttack:0, el:createEl('troop w-12 h-12') };
-    troop.el.innerHTML = data.emoji;
-    troop.el.style.backgroundColor = owner==='player'?'rgba(135,206,250,0.7)':'rgba(240,128,128,0.7)';
-    troop.el.style.border = owner==='player'?'2px solid #4682B4':'2px solid #CD5C5C';
-    setupEntityElement(troop);
-    gameObjects.push(troop);
-  }
-
-  function createTroop(owner, troopId, x, y) { createSingleTroop(owner,troopId,x,y); }
-
-  // ----------------- Deck Builder -----------------
-  function renderCollection() {
-    cardCollectionEl.innerHTML = '';
-    Object.keys(CARD_DATA).forEach(id=>{
-      const card = createEl('card');
-      card.dataset.id = id;
-      card.innerHTML = `<div class="text-2xl">${CARD_DATA[id].emoji}</div><div class="text-sm mt-1">${CARD_DATA[id].name} (${CARD_DATA[id].cost})</div>`;
-      card.addEventListener('click',()=>addCardToDeck(id));
-      cardCollectionEl.appendChild(card);
-    });
-  }
-
+  // -------------------- Deck Builder --------------------
   function renderDeck() {
     currentDeckEl.innerHTML = '';
-    playerDeckFull.forEach((id,index)=>{
-      const card = createEl('card');
-      card.innerHTML = `<div class="text-2xl">${CARD_DATA[id].emoji}</div><div class="text-sm mt-1">${CARD_DATA[id].name}</div>`;
-      card.addEventListener('click',()=>removeCardFromDeck(index));
-      currentDeckEl.appendChild(card);
+    decks[currentDeck].forEach((card,i)=>{
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.textContent = card.emoji;
+      div.title = card.name;
+      div.addEventListener('click',()=>{ decks[currentDeck].splice(i,1); renderDeck(); });
+      currentDeckEl.appendChild(div);
     });
-    deckCountEl.textContent = playerDeckFull.length;
-    startBattleButton.disabled = playerDeckFull.length!==DECK_SIZE;
+    deckCountEl.textContent = decks[currentDeck].length;
+    startBattleButton.disabled = decks[currentDeck].length!==8;
   }
 
-  function addCardToDeck(id){
-    if(playerDeckFull.length>=DECK_SIZE) return;
-    playerDeckFull.push(id);
-    renderDeck();
+  function renderCardCollection() {
+    cardCollectionEl.innerHTML='';
+    allCards.forEach((card)=>{
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.textContent = card.emoji;
+      div.title = `${card.name} (${card.cost})`;
+      div.addEventListener('click', ()=>{
+        if(decks[currentDeck].length<8){
+          decks[currentDeck].push(card);
+          renderDeck();
+        }
+      });
+      cardCollectionEl.appendChild(div);
+    });
   }
 
-  function removeCardFromDeck(index){
-    playerDeckFull.splice(index,1);
-    renderDeck();
-  }
-
-  startBattleButton.addEventListener('click',()=>{
-    playerDeck = [...playerDeckFull];
-    playerHand = playerDeck.slice(0,HAND_SIZE);
-    drawPile = playerDeck.slice(HAND_SIZE);
-    deckBuilderModal.classList.add('hidden');
-    running = true;
-    lastTimestamp = performance.now();
-    requestAnimationFrame(gameLoopRaf);
-    drawCards();
+  deckTabs.forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      deckTabs.forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      currentDeck = parseInt(tab.dataset.deck);
+      renderDeck();
+    });
   });
 
-  function drawCards(){
+  startBattleButton.addEventListener('click',()=>{
+    deckBuilderModal.classList.add('hidden');
+    startGame();
+  });
+
+  deckButton.addEventListener('click',()=>{
+    titleScreen.classList.add('hidden');
+    deckBuilderModal.classList.remove('hidden');
+    renderDeck();
+    renderCardCollection();
+  });
+
+  startButton.addEventListener('click',()=>{
+    titleScreen.classList.add('hidden');
+    if(decks[0].length<8){
+      deckBuilderModal.classList.remove('hidden');
+      renderDeck();
+      renderCardCollection();
+    } else {
+      startGame();
+    }
+  });
+
+  restartButton.addEventListener('click',()=>{
+    messageModal.classList.add('hidden');
+    titleScreen.classList.remove('hidden');
+    resetGame();
+  });
+
+  // -------------------- Game --------------------
+  function resetGame(){
+    elixir = 3;
+    gameTimer = 180;
+    hand = [];
+    playerTowers = 3;
+    aiTowers = 3;
     cardHandEl.innerHTML='';
-    playerHand.forEach(id=>{
-      const card = createEl('card');
-      card.dataset.id=id;
-      const data = CARD_DATA[id];
-      card.innerHTML=`<div class="text-3xl">${data.emoji}</div><div class="text-sm mt-1">${data.name}</div>`;
-      if(data.cost>elixir) card.classList.add('disabled');
-      card.addEventListener('click',()=>{ selectedTroop=id; });
-      cardHandEl.appendChild(card);
+    playerTowersEl.textContent = playerTowers;
+    aiTowersEl.textContent = aiTowers;
+    timerEl.textContent = gameTimer;
+    elixirCountEl.textContent = elixir;
+    elixirBarFill.style.width = `${elixir/elixirMax*100}%`;
+  }
+
+  function startGame(){
+    gameContainer.classList.remove('hidden');
+    resetGame();
+    drawInitialHand();
+    timerInterval = setInterval(()=>{
+      gameTimer--;
+      timerEl.textContent = gameTimer;
+      if(gameTimer<=0){ endGame('Draw'); }
+    },1000);
+    setInterval(()=>{ if(elixir<elixirMax){ elixir++; elixirCountEl.textContent=elixir; elixirBarFill.style.width=`${elixir/elixirMax*100}%`; updateHand(); } },2000);
+  }
+
+  function endGame(result){
+    clearInterval(timerInterval);
+    messageTitle.textContent = result==='Draw'?'Draw!':result==='Win'?'Victory!':'Defeat!';
+    messageText.textContent = `You: ${playerTowers} Towers | AI: ${aiTowers} Towers`;
+    messageModal.classList.remove('hidden');
+    gameContainer.classList.add('hidden');
+  }
+
+  // -------------------- Hand --------------------
+  function drawInitialHand(){
+    hand = [];
+    for(let i=0;i<4;i++){
+      hand.push(decks[currentDeck][i]);
+    }
+    renderHand();
+  }
+
+  function renderHand(){
+    cardHandEl.innerHTML='';
+    hand.forEach((card,i)=>{
+      const div = document.createElement('div');
+      div.className = 'card';
+      if(elixir<card.cost) div.classList.add('disabled');
+      div.textContent = card.emoji;
+      div.title = `${card.name} (${card.cost})`;
+      div.addEventListener('click',()=>{
+        if(elixir>=card.cost){
+          elixir-=card.cost;
+          elixirCountEl.textContent = elixir;
+          elixirBarFill.style.width = `${elixir/elixirMax*100}%`;
+          playCard(card);
+        }
+      });
+      cardHandEl.appendChild(div);
     });
   }
 
-  function cycleCard(playedCardId){
-    const idx = playerHand.indexOf(playedCardId);
-    if(idx>-1){
-      const played = playerHand.splice(idx,1)[0];
-      drawPile.push(played);
-      const next = drawPile.shift();
-      if(next) playerHand.push(next);
+  function updateHand(){ renderHand(); }
+
+  // -------------------- Play Cards --------------------
+  function playCard(card){
+    const troop = document.createElement('div');
+    troop.className='troop';
+    troop.textContent=card.emoji;
+    const boardRect = gameBoard.getBoundingClientRect();
+    const startX = boardRect.width/2;
+    const startY = boardRect.height*0.85;
+    troop.style.left=startX+'px';
+    troop.style.top=startY+'px';
+    gameBoard.appendChild(troop);
+
+    const targetY = boardRect.height*0.2;
+    const duration = 3000 / (card.speed||1);
+    const startTime = performance.now();
+
+    function animate(time){
+      const progress = Math.min((time-startTime)/duration,1);
+      troop.style.top = startY - (startY-targetY)*progress + 'px';
+      if(progress<1){ requestAnimationFrame(animate); }
+      else{ troop.remove(); aiTowers--; aiTowersEl.textContent = aiTowers; checkWinLoss(); }
     }
+    requestAnimationFrame(animate);
+    updateHand();
   }
 
-  function updateUI(force=false){
-    if(force || cache.lastUI.elixir!==elixir){
-      elixirBarFill.style.width = `${(elixir/maxElixir)*100}%`;
-      elixirCountEl.textContent = elixir;
-      cache.lastUI.elixir = elixir;
-      drawCards();
-    }
-    if(force || cache.lastUI.playerTowers!==3){
-      playerTowersEl.textContent=3;
-      aiTowersEl.textContent=3;
-      cache.lastUI.playerTowers=3;
-      cache.lastUI.aiTowers=3;
-    }
+  function checkWinLoss(){
+    if(aiTowers<=0){ endGame('Win'); }
+    if(playerTowers<=0){ endGame('Lose'); }
   }
 
-  function gameLoopRaf(timestamp){
-    if(!running) return;
-    const dt=Math.min(40,timestamp-lastTimestamp);
-    lastTimestamp=timestamp;
-    gameObjects.forEach(updateEntityVisual);
-    if(gameTime>0){
-      gameTime-=dt/1000;
-      timerEl.textContent=Math.ceil(gameTime);
-      requestAnimationFrame(gameLoopRaf);
-    } else endGame("Time's Up!","Draw!");
-  }
-
-  function endGame(title,text){
-    running=false;
-    messageTitle.textContent=title;
-    messageText.textContent=text;
-    messageModal.classList.remove('hidden');
-  }
-
-  restartButton.addEventListener('click',()=>location.reload());
-
-  renderCollection();
 });
