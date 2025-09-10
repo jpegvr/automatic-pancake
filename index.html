@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tower Duel Mini Royale</title>
+<title>Tower Duel Royale</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 <style>
@@ -13,13 +13,13 @@ body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvet
 .card.selected { transform:translateY(-10px) scale(1.05); box-shadow:0 0 10px #fff; }
 .card.disabled { filter:grayscale(100%); cursor:not-allowed; }
 .hidden { display:none; }
-#game-board { background:#4CAF50; position:relative; width:100%; aspect-ratio:9/16; margin:auto; border:4px solid #8B4513; border-radius:12px; overflow:hidden; }
-.river { position:absolute; width:100%; height:8%; top:46%; background:linear-gradient(to right,#4682B4,#87CEEB); }
-.bridge { position:absolute; width:20%; height:8%; background:#DAA520; top:46%; border-radius:6px; }
-.bridge.left { left:16%; }
-.bridge.right { right:16%; }
-.troop { position:absolute; width:40px; height:40px; background:#f59e0b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; text-align:center; }
+#game-board { background:#4CAF50; position:relative; width:100%; max-width:800px; height:600px; margin:auto; border:4px solid #8B4513; border-radius:12px; overflow:hidden; touch-action:none; }
+.river { position:absolute; width:100%; height:10%; top:45%; background:linear-gradient(to right,#4682B4,#87CEEB); }
+.troop { position:absolute; width:40px; height:40px; background:#f59e0b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; text-align:center; cursor:pointer; }
 .enemy { background:red; }
+.tower { position:absolute; width:60px; height:60px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px; text-align:center; color:white; }
+.king { background:purple; }
+.princess { background:blue; }
 #card-hand { display:flex; gap:8px; overflow-x:auto; margin-top:8px; }
 #card-collection { display:flex; flex-wrap:wrap; gap:6px; max-height:300px; overflow-y:auto; }
 #current-deck { display:flex; flex-wrap:wrap; gap:6px; min-height:100px; }
@@ -39,8 +39,6 @@ body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvet
 <div id="game-container" class="hidden flex flex-col items-center w-full p-4">
   <div id="game-board">
     <div class="river"></div>
-    <div class="bridge left"></div>
-    <div class="bridge right"></div>
   </div>
   <div class="w-full max-w-lg mt-4">
     <div class="flex justify-between mb-2">
@@ -86,27 +84,27 @@ body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvet
 
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const titleScreen = document.getElementById('title-screen');
-  const startButton = document.getElementById('start-button');
-  const deckButton = document.getElementById('deck-button');
-  const gameContainer = document.getElementById('game-container');
-  const deckBuilderModal = document.getElementById('deck-builder-modal');
-  const startBattleButton = document.getElementById('start-battle-button');
-  const deckTabs = document.querySelectorAll('.deck-tab');
-  const currentDeckEl = document.getElementById('current-deck');
-  const cardCollectionEl = document.getElementById('card-collection');
-  const deckCountEl = document.getElementById('deck-count');
-  const cardHandEl = document.getElementById('card-hand');
-  const elixirCountEl = document.getElementById('elixir-count');
-  const elixirBarFill = document.getElementById('elixir-bar-fill');
-  const messageModal = document.getElementById('message-modal');
-  const restartButton = document.getElementById('restart-button');
-  const messageTitle = document.getElementById('message-title');
-  const messageText = document.getElementById('message-text');
-  const aiTowersEl = document.getElementById('ai-towers');
-  const playerTowersEl = document.getElementById('player-towers');
-  const timerEl = document.getElementById('timer');
-  const gameBoard = document.getElementById('game-board');
+  const titleScreen=document.getElementById('title-screen');
+  const startButton=document.getElementById('start-button');
+  const deckButton=document.getElementById('deck-button');
+  const gameContainer=document.getElementById('game-container');
+  const deckBuilderModal=document.getElementById('deck-builder-modal');
+  const startBattleButton=document.getElementById('start-battle-button');
+  const deckTabs=document.querySelectorAll('.deck-tab');
+  const currentDeckEl=document.getElementById('current-deck');
+  const cardCollectionEl=document.getElementById('card-collection');
+  const deckCountEl=document.getElementById('deck-count');
+  const cardHandEl=document.getElementById('card-hand');
+  const elixirCountEl=document.getElementById('elixir-count');
+  const elixirBarFill=document.getElementById('elixir-bar-fill');
+  const messageModal=document.getElementById('message-modal');
+  const restartButton=document.getElementById('restart-button');
+  const messageTitle=document.getElementById('message-title');
+  const messageText=document.getElementById('message-text');
+  const aiTowersEl=document.getElementById('ai-towers');
+  const playerTowersEl=document.getElementById('player-towers');
+  const timerEl=document.getElementById('timer');
+  const gameBoard=document.getElementById('game-board');
 
   let currentDeck=0;
   const decks=[[],[],[]];
@@ -118,8 +116,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   let timerInterval=null;
   let troops=[];
   let aiTowers=3, playerTowers=3;
+  const towers=[];
 
-  // Cards
   const troopNames=["Knight","Archer","Giant","Goblin","Wizard","Skeleton","Minion","Balloon","Hog Rider","Valkyrie","P.E.K.K.A","Musketeer","Baby Dragon","Electro Wizard","Ice Spirit","Fire Spirit","Mega Minion","Royal Ghost","Prince","Dark Prince","Ram Rider"];
   troopNames.forEach(n=>allCards.push({name:n,type:"Troop",cost:Math.floor(Math.random()*6)+1,damage:1,hp:5}));
 
@@ -154,10 +152,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   startButton.addEventListener('click',()=>{
     titleScreen.classList.add('hidden');
-    if(decks[0].length<4){
-      deckBuilderModal.classList.remove('hidden');
-      renderDeck(); renderCardCollection();
-    }else startGame();
+    if(decks[0].length<4){ deckBuilderModal.classList.remove('hidden'); renderDeck(); renderCardCollection();}
+    else startGame();
   });
 
   deckButton.addEventListener('click',()=>{
@@ -182,13 +178,14 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   function startGame(){
     gameContainer.classList.remove('hidden');
-    playerElixir=3;
-    elixirCountEl.textContent=playerElixir;
+    playerElixir=3; elixirCountEl.textContent=playerElixir;
     elixirBarFill.style.width=(playerElixir/maxElixir*100)+'%';
     timer=180; timerEl.textContent=timer;
     aiTowers=3; playerTowers=3; aiTowersEl.textContent=aiTowers; playerTowersEl.textContent=playerTowers;
     cardHandEl.innerHTML='';
     troops=[];
+    towers.forEach(t=>t.el.remove()); towers.length=0;
+    setupTowers();
 
     for(let i=0;i<handSize;i++) if(decks[currentDeck][i]) drawCard(decks[currentDeck][i]);
 
@@ -201,56 +198,107 @@ document.addEventListener('DOMContentLoaded',()=>{
     },1000);
   }
 
+  function setupTowers(){
+    // Player towers
+    spawnTower(50,500,'king','player');
+    spawnTower(150,500,'princess','player');
+    spawnTower(650,500,'princess','player');
+    // AI towers
+    spawnTower(50,50,'princess','ai');
+    spawnTower(650,50,'princess','ai');
+    spawnTower(350,50,'king','ai');
+  }
+
+  function spawnTower(x,y,type,owner){
+    const t=document.createElement('div');
+    t.className='tower '+type;
+    t.textContent=type[0].toUpperCase();
+    gameBoard.appendChild(t);
+    t.style.left=x+'px'; t.style.top=y+'px';
+    towers.push({el:t,type,owner,hp:10});
+  }
+
   function drawCard(card){
     const c=document.createElement('div');
     c.className='card bg-purple-500 p-2 rounded text-sm text-center';
     c.textContent=`${card.name} (${card.cost})`;
     if(playerElixir<card.cost) c.classList.add('disabled');
-    c.addEventListener('click',()=>{
+    let dragging=false;
+    let offsetX, offsetY;
+
+    c.addEventListener('mousedown', e=>{
       if(playerElixir>=card.cost){
-        playerElixir-=card.cost;
-        elixirCountEl.textContent=playerElixir;
-        elixirBarFill.style.width=(playerElixir/maxElixir*100)+'%';
-        spawnTroop(card,"player");
-        c.remove();
+        dragging=true;
+        offsetX=e.offsetX; offsetY=e.offsetY;
       }
     });
+    document.addEventListener('mousemove', e=>{
+      if(dragging){
+        c.style.position='absolute';
+        c.style.zIndex='999';
+        c.style.left=(e.pageX-offsetX)+'px';
+        c.style.top=(e.pageY-offsetY)+'px';
+      }
+    });
+    document.addEventListener('mouseup', e=>{
+      if(dragging){
+        dragging=false;
+        const rect=gameBoard.getBoundingClientRect();
+        if(e.pageX>=rect.left && e.pageX<=rect.right && e.pageY>=rect.top+rect.height/2 && e.pageY<=rect.bottom){
+          // Spawn troop
+          playerElixir-=card.cost;
+          elixirCountEl.textContent=playerElixir;
+          elixirBarFill.style.width=(playerElixir/maxElixir*100)+'%';
+          spawnTroop(card,"player",e.pageX-rect.left-20,e.pageY-rect.top-20);
+        }
+        c.style.position=''; c.style.zIndex=''; c.style.left=''; c.style.top='';
+      }
+    });
+
     cardHandEl.appendChild(c);
   }
 
-  function spawnTroop(card,owner){
+  function spawnTroop(card,owner,x,y){
     const t=document.createElement('div');
-    t.className='troop';
-    if(owner==="ai") t.classList.add('enemy');
+    t.className='troop'; if(owner==="ai") t.classList.add('enemy');
     t.textContent=card.name[0];
     gameBoard.appendChild(t);
-    let x=owner==="player"?50:gameBoard.offsetWidth-90;
-    let y=owner==="player"?gameBoard.offsetHeight-100:50;
-    t.style.left=x+'px';
-    t.style.top=y+'px';
+    x=x||50; y=y||500;
+    t.style.left=x+'px'; t.style.top=y+'px';
     troops.push({el:t,owner,damage:card.damage,hp:card.hp});
   }
 
   function moveTroops(){
     troops.forEach(tr=>{
-      let speed=10;
-      let dx=tr.owner==="player"?speed:-speed;
-      let newX=tr.el.offsetLeft+dx;
-      if(tr.owner==="player" && newX>=gameBoard.offsetWidth-80){
-        aiTowers--; aiTowersEl.textContent=aiTowers;
-        tr.el.remove();
-        troops=troops.filter(tt=>tt!==tr);
-      } else if(tr.owner==="ai" && newX<=50){
-        playerTowers--; playerTowersEl.textContent=playerTowers;
-        tr.el.remove();
-        troops=troops.filter(tt=>tt!==tr);
-      } else tr.el.style.left=newX+'px';
+      let targetTower=null;
+      let dist=Infinity;
+      towers.filter(tt=>tt.owner!==tr.owner).forEach(tt=>{
+        const dx=tt.el.offsetLeft-tr.el.offsetLeft;
+        const dy=tt.el.offsetTop-tr.el.offsetTop;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<dist){dist=d; targetTower=tt;}
+      });
+      if(targetTower){
+        const dx=targetTower.el.offsetLeft-tr.el.offsetLeft;
+        const dy=targetTower.el.offsetTop-tr.el.offsetTop;
+        const len=Math.sqrt(dx*dx+dy*dy);
+        const speed=2;
+        tr.el.style.left=(tr.el.offsetLeft+dx/len*speed)+'px';
+        tr.el.style.top=(tr.el.offsetTop+dy/len*speed)+'px';
+        if(len<25){ // Attack
+          targetTower.hp-=tr.damage;
+          if(targetTower.hp<=0){
+            targetTower.el.remove();
+            towers.splice(towers.indexOf(targetTower),1);
+          }
+        }
+      }
     });
   }
 
   function checkVictory(){
-    if(aiTowers<=0) endGame("Victory!","You destroyed all enemy towers!");
-    if(playerTowers<=0) endGame("Defeat!","Your towers were destroyed.");
+    if(!towers.find(t=>t.type==='king' && t.owner==='ai')) endGame("Victory!","You destroyed enemy King!");
+    if(!towers.find(t=>t.type==='king' && t.owner==='player')) endGame("Defeat!","Your King Tower was destroyed.");
   }
 
   function endGame(title,text){
@@ -261,6 +309,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     clearInterval(timerInterval);
     troops.forEach(t=>t.el.remove());
     troops=[];
+    towers.forEach(t=>t.el.remove());
+    towers.length=0;
   }
 
   restartButton.addEventListener('click',()=>{
