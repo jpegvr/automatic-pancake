@@ -74,9 +74,9 @@
             align-items: center;
             justify-content: center;
             font-size: 1.25rem; /* 20px */
-            transition: transform 0.1s linear, top 0.1s linear, left 0.1s linear;
             z-index: 20;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            will-change: transform;
         }
         .health-bar {
             position: absolute;
@@ -101,6 +101,7 @@
             height: 10px;
             z-index: 50;
             box-shadow: 0 0 5px #FFD700;
+            will-change: transform;
         }
         #elixir-bar-fill {
             transition: width 0.5s linear;
@@ -215,10 +216,6 @@
             let aiElixir = 5;
             let maxElixir = 10;
             let selectedTroop = null;
-            let gameLoopInterval = null;
-            let timerInterval = null;
-            let elixirInterval = null;
-            let aiInterval = null;
             let gameTime = 180;
             let gameObjects = [];
             let nextId = 0;
@@ -288,9 +285,9 @@
             let playerDeckFull = [];
             let playerHand = [];
             let drawPile = [];
+            let lastFrameTime = performance.now();
             
             function initGame() {
-                clearInterval(gameLoopInterval);
                 clearInterval(timerInterval);
                 clearInterval(elixirInterval);
                 clearInterval(aiInterval);
@@ -322,11 +319,11 @@
                 drawPile = playerDeckFull.slice(HAND_SIZE);
                 drawCards();
                 updateUI();
-                clearInterval(gameLoopInterval);
                 clearInterval(timerInterval);
                 clearInterval(elixirInterval);
                 clearInterval(aiInterval);
-                gameLoopInterval = setInterval(gameLoop, 1000 / 30);
+                lastFrameTime = performance.now();
+                requestAnimationFrame(gameLoop);
                 elixirInterval = setInterval(generateElixir, 2000);
                 aiInterval = setInterval(aiLogic, 2500);
                 timerInterval = setInterval(updateTimer, 1000);
@@ -344,16 +341,15 @@
                     lastAttack: 0, frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
                     speed: 0, originalSpeed: 0,
                     originalAttackSpeed: isKing ? 1000 : 800,
-                    el: document.createElement('div')
+                    el: document.createElement('div'),
+                    dirty: true
                 };
                 if (isKing) tower.isActivated = false;
                 
                 tower.el.className = `tower ${owner} ${type}-tower w-[12%] h-[12%]`;
-                tower.el.style.left = `${x}%`;
-                tower.el.style.top = `${y}%`;
-                tower.el.style.transform = 'translate(-50%, -50%)';
                 if(owner === 'player') tower.el.style.backgroundColor = '#87CEEB';
                 if(owner === 'ai') tower.el.style.backgroundColor = '#F08080';
+                tower.el.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%)`;
 
                 const healthBar = createHealthBar();
                 tower.el.appendChild(healthBar.bar);
@@ -522,13 +518,12 @@
                     target: null, lastAttack: 0, isCharging: false, chargeDistance: 0,
                     frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
                     originalSpeed: data.speed, originalAttackSpeed: data.attackSpeed,
-                    el: document.createElement('div')
+                    el: document.createElement('div'),
+                    dirty: true
                 };
                 
                 troop.el.className = `troop w-10 h-10`;
-                troop.el.style.left = `${x}%`;
-                troop.el.style.top = `${y}%`;
-                troop.el.style.transform = 'translate(-50%, -50%)';
+                troop.el.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%)`;
                 troop.el.innerHTML = data.emoji;
                 if (owner === 'player') {
                     troop.el.style.backgroundColor = 'rgba(135, 206, 250, 0.7)';
@@ -554,12 +549,11 @@
                     currentDamage: data.damage, currentTargetId: null,
                     frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
                     speed: 0, originalSpeed: 0, originalAttackSpeed: data.attackSpeed || 0,
-                    el: document.createElement('div')
+                    el: document.createElement('div'),
+                    dirty: true
                 };
                 building.el.className = 'building w-[10%] h-[10%]';
-                building.el.style.left = `${x}%`;
-                building.el.style.top = `${y}%`;
-                building.el.style.transform = 'translate(-50%, -50%)';
+                building.el.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%)`;
                 building.el.innerHTML = data.emoji;
                 if(owner === 'player') building.el.style.backgroundColor = '#87CEEB';
                 if(owner === 'ai') building.el.style.backgroundColor = '#F08080';
@@ -575,11 +569,9 @@
                 const opponent = owner === 'player' ? 'ai' : 'player';
                 const spellEffectEl = document.createElement('div');
                 spellEffectEl.className = 'absolute border-4 rounded-full pointer-events-none';
-                spellEffectEl.style.left = `${x}%`;
-                spellEffectEl.style.top = `${y}%`;
+                spellEffectEl.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%) scale(0.5)`;
                 spellEffectEl.style.width = `${spellData.radius * 2}%`;
                 spellEffectEl.style.height = `${spellData.radius * 2}%`;
-                spellEffectEl.style.transform = 'translate(-50%, -50%) scale(0.5)';
                 spellEffectEl.style.opacity = '1';
                 spellEffectEl.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
                 const colors = {
@@ -588,7 +580,7 @@
                 spellEffectEl.style.borderColor = colors[spellId] || 'rgba(255, 255, 255, 0.5)';
                 gameBoard.appendChild(spellEffectEl);
                 requestAnimationFrame(() => {
-                    spellEffectEl.style.transform = 'translate(-50%, -50%) scale(1)';
+                    spellEffectEl.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%) scale(1)`;
                     spellEffectEl.style.opacity = '0';
                 });
                 setTimeout(() => spellEffectEl.remove(), 300);
@@ -634,8 +626,12 @@
                     dealSingleDamage({ damage: spellData.damage }, t);
                 });
             }
-
-            function gameLoop() {
+            
+            function gameLoop(currentTime) {
+                const deltaTime = (currentTime - lastFrameTime) / 1000;
+                lastFrameTime = currentTime;
+                
+                // Game Logic Update
                 const now = Date.now();
                 gameObjects.forEach(obj => {
                     if (obj.hp <= 0) return;
@@ -650,10 +646,9 @@
 
                     // Handle Tornado effect
                     if (obj.tornadoUntil && obj.tornadoUntil > now) {
-                        obj.x += obj.forceX;
-                        obj.y += obj.forceY;
-                        obj.el.style.left = `${obj.x}%`;
-                        obj.el.style.top = `${obj.y}%`;
+                        obj.x += obj.forceX * 60 * deltaTime;
+                        obj.y += obj.forceY * 60 * deltaTime;
+                        obj.dirty = true;
                     } else if (obj.tornadoUntil) {
                         obj.tornadoUntil = 0;
                         obj.forceX = 0;
@@ -693,10 +688,9 @@
                                 // Move towards target
                                 if (obj.speed > 0) {
                                     const angle = Math.atan2(obj.target.y - obj.y, obj.target.x - obj.x);
-                                    obj.x += (obj.speed / 100) * Math.cos(angle);
-                                    obj.y += (obj.speed / 100) * Math.sin(angle);
-                                    obj.el.style.left = `${obj.x}%`;
-                                    obj.el.style.top = `${obj.y}%`;
+                                    obj.x += (obj.speed * 60 * deltaTime) * Math.cos(angle);
+                                    obj.y += (obj.speed * 60 * deltaTime) * Math.sin(angle);
+                                    obj.dirty = true;
                                 }
                             }
                         }
@@ -707,14 +701,6 @@
                         const princessTowers = gameObjects.filter(o => o.owner === obj.owner && o.type === 'princess');
                         if (princessTowers.length < 2) {
                             obj.isActivated = true;
-                        }
-                    }
-
-                    // Update UI position
-                    if (obj.objType === 'troop' && obj.speed > 0) {
-                        if (obj.el) {
-                            obj.el.style.left = `${obj.x}%`;
-                            obj.el.style.top = `${obj.y}%`;
                         }
                     }
                 });
@@ -742,8 +728,7 @@
                     }
                     p.x += (dx / distance) * p.speed;
                     p.y += (dy / distance) * p.speed;
-                    p.el.style.left = `${p.x}%`;
-                    p.el.style.top = `${p.y}%`;
+                    p.dirty = true;
                 });
                 
                 // Remove dead objects
@@ -759,26 +744,37 @@
                     if (obj.healAmount) {
                          gameObjects.filter(o => o.owner === obj.owner && o.hp > 0 && o.objType === 'troop' && getDistance(obj, o) < 20).forEach(o => {
                              o.hp = Math.min(o.maxHp, o.hp + obj.healAmount);
+                             o.dirty = true;
                          });
                     }
                 });
                 gameObjects = gameObjects.filter(o => o.hp > 0);
                 
-                // Update health bars
+                // Render Update (only for 'dirty' objects)
                 gameObjects.forEach(obj => {
-                    const healthPercentage = (obj.hp / obj.maxHp) * 100;
-                    if (obj.healthBarInner) {
-                        obj.healthBarInner.style.width = `${healthPercentage}%`;
-                        if (healthPercentage < 25) {
-                            obj.healthBarInner.style.backgroundColor = '#FF0000'; // Red
-                        } else if (healthPercentage < 50) {
-                            obj.healthBarInner.style.backgroundColor = '#FFD700'; // Gold
+                    if (obj.dirty) {
+                        if (obj.objType === 'troop' || obj.objType === 'projectile') {
+                            obj.el.style.transform = `translate(-50%, -50%) translate(${obj.x}%, ${obj.y}%)`;
                         } else {
-                            obj.healthBarInner.style.backgroundColor = '#4CAF50'; // Green
+                            obj.el.style.transform = `translate(-50%, -50%) translate(${obj.x}%, ${obj.y}%)`;
                         }
+                        const healthPercentage = (obj.hp / obj.maxHp) * 100;
+                        if (obj.healthBarInner) {
+                             obj.healthBarInner.style.width = `${healthPercentage}%`;
+                             if (healthPercentage < 25) {
+                                obj.healthBarInner.style.backgroundColor = '#FF0000'; // Red
+                            } else if (healthPercentage < 50) {
+                                obj.healthBarInner.style.backgroundColor = '#FFD700'; // Gold
+                            } else {
+                                obj.healthBarInner.style.backgroundColor = '#4CAF50'; // Green
+                            }
+                        }
+                        obj.dirty = false;
                     }
                 });
+
                 checkWinCondition();
+                requestAnimationFrame(gameLoop);
             }
 
             function getClosestTarget(obj) {
@@ -875,13 +871,13 @@
                     damage: attacker.damage,
                     targetId: target.id,
                     splashRadius: attacker.splashRadius || 0,
-                    el: document.createElement('div')
+                    el: document.createElement('div'),
+                    dirty: true
                 };
                 if (isBoomerang) projectile.isBoomerang = true;
                 
                 projectile.el.className = 'projectile';
-                projectile.el.style.left = `${projectile.x}%`;
-                projectile.el.style.top = `${projectile.y}%`;
+                projectile.el.style.transform = `translate(-50%, -50%) translate(${projectile.x}%, ${projectile.y}%)`;
                 gameBoard.appendChild(projectile.el);
                 gameObjects.push(projectile);
             }
@@ -897,6 +893,7 @@
                 } else {
                     target.hp -= damageToDeal;
                 }
+                target.dirty = true;
                 
                 if (attacker.stunDuration) target.stunnedUntil = Date.now() + attacker.stunDuration;
                 
@@ -912,6 +909,7 @@
                     const angle = Math.atan2(target.y - attacker.y, target.x - attacker.x);
                     target.x += attacker.pushback * Math.cos(angle);
                     target.y += attacker.pushback * Math.sin(angle);
+                    target.dirty = true;
                 }
             }
             
@@ -925,6 +923,8 @@
                 } else {
                     target.hp -= damageObj.damage;
                 }
+                target.dirty = true;
+
                 if (damageObj.stunDuration) target.stunnedUntil = Date.now() + damageObj.stunDuration;
             }
 
@@ -1009,7 +1009,6 @@
             }
 
             function endGame(result) {
-                clearInterval(gameLoopInterval);
                 clearInterval(timerInterval);
                 clearInterval(elixirInterval);
                 clearInterval(aiInterval);
