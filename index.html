@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Bangers', cursive;
             touch-action: none; /* Prevents scrolling on mobile */
         }
         .font-bangers {
@@ -30,7 +30,7 @@
             z-index: 1;
         }
         .river {
-            background: linear-gradient(to right, #4682B4, #87CEEB); /* Steel Blue to Sky Blue */
+            background: linear-gradient(to right, #4682B4, #87CEEB);
             z-index: 0;
         }
         .tower {
@@ -44,14 +44,16 @@
             position: absolute;
             z-index: 10;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            width: 15%;
+            height: 15%;
         }
         .king-tower::before {
             content: '👑';
-            font-size: 1.5rem; /* 24px */
+            font-size: 2rem;
         }
         .princess-tower::before {
              content: '🏹';
-            font-size: 1.25rem; /* 20px */
+            font-size: 1.5rem;
         }
         .building {
             background-color: #DEB887; /* BurlyWood */
@@ -65,18 +67,19 @@
             z-index: 10;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             font-size: 2rem;
+            width: 12%;
+            height: 12%;
         }
-
         .troop {
             position: absolute;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem; /* 20px */
+            font-size: 1.25rem;
+            transition: transform 0.1s linear, top 0.1s linear, left 0.1s linear;
             z-index: 20;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            will-change: transform;
         }
         .health-bar {
             position: absolute;
@@ -101,7 +104,6 @@
             height: 10px;
             z-index: 50;
             box-shadow: 0 0 5px #FFD700;
-            will-change: transform;
         }
         #elixir-bar-fill {
             transition: width 0.5s linear;
@@ -109,14 +111,21 @@
         .card {
             transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            border: 2px solid transparent;
+        }
+        .card:hover {
+            border-color: #6B46C1;
         }
         .card.selected {
             transform: translateY(-15px) scale(1.1);
             box-shadow: 0 0 20px rgba(76, 175, 80, 0.9);
+            border-color: #4CAF50;
         }
         .card.disabled {
             filter: grayscale(100%);
             cursor: not-allowed;
+            opacity: 0.7;
         }
 
         /* Message Modal */
@@ -134,7 +143,7 @@
 </head>
 <body class="bg-gray-800 flex flex-col items-center justify-center min-h-screen p-4 text-white">
 
-    <h1 class="text-4xl md:text-6xl font-bangers text-yellow-400 mb-4 tracking-wider">TOWER DUEL</h1>
+    <h1 class="text-4xl md:text-6xl font-bangers text-yellow-400 mb-4 tracking-wider text-shadow-md">TOWER DUEL</h1>
 
     <div class="w-full max-w-sm md:max-w-md lg:max-w-lg aspect-[9/16] relative">
         <div id="game-board" class="w-full h-full rounded-lg shadow-2xl">
@@ -176,7 +185,7 @@
     </div>
 
     <div id="deck-builder-modal" class="fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50 p-4">
-        <div class="bg-gray-700 p-6 rounded-lg shadow-2xl w-full max-w-2xl border-4 border-yellow-400">
+        <div class="bg-gray-700 p-6 rounded-lg shadow-2xl w-full max-w-3xl border-4 border-yellow-400">
             <h2 class="text-3xl font-bangers text-yellow-400 mb-4 text-center">Build Your Deck</h2>
             
             <h3 class="font-bold text-lg mb-2 text-purple-300">Your Deck (<span id="deck-count">0</span>/8)</h3>
@@ -216,11 +225,16 @@
             let aiElixir = 5;
             let maxElixir = 10;
             let selectedTroop = null;
+            let gameLoopInterval = null;
+            let timerInterval = null;
+            let elixirInterval = null;
+            let aiInterval = null;
             let gameTime = 180;
             let gameObjects = [];
             let nextId = 0;
             const DECK_SIZE = 8;
             const HAND_SIZE = 4;
+
             const CARD_DATA = {
                 // Troops
                 skeletons: { cardType: 'troop', name: 'Skeletons', emoji: '💀', cost: 1, hp: 16, damage: 6, range: 1.5, speed: 1.9, type: 'ground', spawnCount: 4, spawnRadius: 10, attackSpeed: 1000 },
@@ -241,7 +255,7 @@
                 musketeer: { cardType: 'troop', name: 'Musketeer', emoji: '💂‍♀️', cost: 4, hp: 120, damage: 40, range: 6, speed: 1.1, type: 'ground', attackSpeed: 1200 },
                 dragon: { cardType: 'troop', name: 'Dragon', emoji: '🐉', cost: 4, hp: 160, damage: 28, range: 4, speed: 1.4, type: 'air', attackSpeed: 1600, splashDamage: true, splashRadius: 10 },
                 miniPekka: { cardType: 'troop', name: 'Mini P.E.K.K.A', emoji: '⚙️', cost: 4, hp: 300, damage: 90, range: 1.5, speed: 1.5, type: 'ground', attackSpeed: 1700 },
-                electroWizard: { cardType: 'troop', name: 'E. Wizard', emoji: '⚡️🧙', cost: 4, hp: 110, damage: 18, range: 5, speed: 1.2, type: 'ground', attackSpeed: 1800, stunDuration: 500 },
+                electroWizard: { cardType: 'troop', name: 'E.Wizard', emoji: '⚡️🧙', cost: 4, hp: 110, damage: 18, range: 5, speed: 1.2, type: 'ground', attackSpeed: 1800, stunDuration: 500 },
                 babyDragon: { cardType: 'troop', name: 'Baby Dragon', emoji: '🦖', cost: 4, hp: 160, damage: 25, range: 3.5, speed: 1.5, type: 'air', attackSpeed: 1500, splashDamage: true, splashRadius: 10 },
                 lumberjack: { cardType: 'troop', name: 'Lumberjack', emoji: '🪓', cost: 4, hp: 120, damage: 45, range: 1.5, speed: 2.4, type: 'ground', attackSpeed: 800, dropsRageOnDeath: true },
                 giant: { cardType: 'troop', name: 'Giant', emoji: '🗿', cost: 5, hp: 500, damage: 28, range: 1.5, speed: 0.8, type: 'ground', targets: 'buildings', attackSpeed: 1700 },
@@ -255,8 +269,6 @@
                 eliteBarbarians: { cardType: 'troop', name: 'Elite Barbarians', emoji: '💪', cost: 6, hp: 220, damage: 42, range: 1.5, speed: 2.1, type: 'ground', spawnCount: 2, spawnRadius: 5, attackSpeed: 1500 },
                 pekka: { cardType: 'troop', name: 'P.E.K.K.A', emoji: '🤖', cost: 7, hp: 650, damage: 120, range: 1.6, speed: 0.7, type: 'ground', attackSpeed: 1900 },
                 golem: { cardType: 'troop', name: 'Golem', emoji: '🪨', cost: 8, hp: 850, damage: 40, range: 1.5, speed: 0.6, type: 'ground', targets: 'buildings', attackSpeed: 2500 },
-                electroDragon: { cardType: 'troop', name: 'Electro Dragon', emoji: '🐉⚡', cost: 5, hp: 250, damage: 25, range: 5.5, speed: 1.2, type: 'air', attackSpeed: 2000, chainTargetCount: 3 },
-                healSpirit: { cardType: 'troop', name: 'Heal Spirit', emoji: '✨', cost: 1, hp: 10, damage: 0, range: 0, speed: 2.5, type: 'ground', healAmount: 200 },
 
                 // Spells
                 zap: { cardType: 'spell', name: 'Zap', emoji: '⚡️', cost: 2, damage: 25, radius: 12, stunDuration: 500 },
@@ -267,7 +279,6 @@
                 freeze: { cardType: 'spell', name: 'Freeze', emoji: '🥶', cost: 4, radius: 20, duration: 3500 },
                 rocket: { cardType: 'spell', name: 'Rocket', emoji: '🚀', cost: 6, damage: 450, radius: 10 },
                 lightning: { cardType: 'spell', name: 'Lightning', emoji: '🌩️', cost: 6, damage: 160, radius: 20, strikeCount: 3 },
-                tornado: { cardType: 'spell', name: 'Tornado', emoji: '🌪️', cost: 3, radius: 25, duration: 3000, pullStrength: 0.05 },
                 
                 // Buildings
                 cannon: { cardType: 'building', name: 'Cannon', emoji: '💣', cost: 3, hp: 280, damage: 35, range: 5.5, attackSpeed: 1100, lifetime: 30, targets: 'ground' },
@@ -277,17 +288,15 @@
                 infernoTower: { cardType: 'building', name: 'Inferno Tower', emoji: '🔥🗼', cost: 5, hp: 350, damage: 12, damageRamp: 1.25, maxDamage: 180, range: 6, attackSpeed: 400, lifetime: 40, targets: 'any' },
                 goblinHut: { cardType: 'building', name: 'Goblin Hut', emoji: '🛖', cost: 5, hp: 300, lifetime: 50, spawnSpeed: 4900, spawnId: 'spearGoblins' },
                 xBow: { cardType: 'building', name: 'X-Bow', emoji: '✖️', cost: 6, hp: 420, damage: 10, range: 11.5, attackSpeed: 300, lifetime: 40, targets: 'ground' },
-                elixirCollector: { cardType: 'building', name: 'Elixir Collector', emoji: '💧', cost: 6, hp: 250, lifetime: 70, spawnSpeed: 8500, givesElixir: true },
-                furnace: { cardType: 'building', name: 'Furnace', emoji: '🔥', cost: 4, hp: 320, lifetime: 50, spawnSpeed: 10000, spawnId: 'fireSpirit', spawnOnDeath: 1 }
+                elixirCollector: { cardType: 'building', name: 'Elixir Collector', emoji: '💧', cost: 6, hp: 250, lifetime: 70, spawnSpeed: 8500, givesElixir: true }
             };
-
             let playerDeck = [];
             let playerDeckFull = [];
             let playerHand = [];
             let drawPile = [];
-            let lastFrameTime = performance.now();
-            
+
             function initGame() {
+                clearInterval(gameLoopInterval);
                 clearInterval(timerInterval);
                 clearInterval(elixirInterval);
                 clearInterval(aiInterval);
@@ -319,11 +328,11 @@
                 drawPile = playerDeckFull.slice(HAND_SIZE);
                 drawCards();
                 updateUI();
+                clearInterval(gameLoopInterval);
                 clearInterval(timerInterval);
                 clearInterval(elixirInterval);
                 clearInterval(aiInterval);
-                lastFrameTime = performance.now();
-                requestAnimationFrame(gameLoop);
+                gameLoopInterval = setInterval(gameLoop, 1000 / 30);
                 elixirInterval = setInterval(generateElixir, 2000);
                 aiInterval = setInterval(aiLogic, 2500);
                 timerInterval = setInterval(updateTimer, 1000);
@@ -341,15 +350,16 @@
                     lastAttack: 0, frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
                     speed: 0, originalSpeed: 0,
                     originalAttackSpeed: isKing ? 1000 : 800,
-                    el: document.createElement('div'),
-                    dirty: true
+                    el: document.createElement('div')
                 };
                 if (isKing) tower.isActivated = false;
                 
-                tower.el.className = `tower ${owner} ${type}-tower w-[12%] h-[12%]`;
+                tower.el.className = `tower ${owner} ${type}-tower`;
+                tower.el.style.left = `${x}%`;
+                tower.el.style.top = `${y}%`;
+                tower.el.style.transform = 'translate(-50%, -50%)';
                 if(owner === 'player') tower.el.style.backgroundColor = '#87CEEB';
                 if(owner === 'ai') tower.el.style.backgroundColor = '#F08080';
-                tower.el.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%)`;
 
                 const healthBar = createHealthBar();
                 tower.el.appendChild(healthBar.bar);
@@ -508,22 +518,23 @@
                     createSingleTroop(owner, troopId, x, y);
                 }
             }
-            
+
             function createSingleTroop(owner, troopId, x, y) {
                 const data = CARD_DATA[troopId];
                 const troop = {
                     id: nextId++,
                     objType: 'troop', owner, troopId, x, y, hp: data.hp, shieldHp: data.shieldHp || 0, maxHp: data.hp,
                     ...data,
-                    target: null, lastAttack: 0, isCharging: false, chargeDistance: 0,
-                    frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
+                    target: null, lastAttack: 0, isCharging: false, chargeDistance: 0, frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
                     originalSpeed: data.speed, originalAttackSpeed: data.attackSpeed,
-                    el: document.createElement('div'),
-                    dirty: true
+                    el: document.createElement('div')
                 };
-                
-                troop.el.className = `troop w-10 h-10`;
-                troop.el.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%)`;
+                const emojiSize = getComputedStyle(document.documentElement).fontSize;
+                const sizePx = parseFloat(emojiSize) * 2;
+                troop.el.className = `troop w-[5%] h-[5%]`;
+                troop.el.style.left = `${x}%`;
+                troop.el.style.top = `${y}%`;
+                troop.el.style.transform = 'translate(-50%, -50%)';
                 troop.el.innerHTML = data.emoji;
                 if (owner === 'player') {
                     troop.el.style.backgroundColor = 'rgba(135, 206, 250, 0.7)';
@@ -545,15 +556,15 @@
                     id: nextId++,
                     objType: 'building', owner, buildingId, x, y, hp: data.hp, maxHp: data.hp,
                     ...data,
-                    target: null, lastAttack: 0, lastSpawn: Date.now(),
-                    currentDamage: data.damage, currentTargetId: null,
+                    target: null, lastAttack: 0, lastSpawn: Date.now(), currentDamage: data.damage, currentTargetId: null,
                     frozenUntil: 0, stunnedUntil: 0, rageUntil: 0,
                     speed: 0, originalSpeed: 0, originalAttackSpeed: data.attackSpeed || 0,
-                    el: document.createElement('div'),
-                    dirty: true
+                    el: document.createElement('div')
                 };
-                building.el.className = 'building w-[10%] h-[10%]';
-                building.el.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%)`;
+                building.el.className = 'building';
+                building.el.style.left = `${x}%`;
+                building.el.style.top = `${y}%`;
+                building.el.style.transform = 'translate(-50%, -50%)';
                 building.el.innerHTML = data.emoji;
                 if(owner === 'player') building.el.style.backgroundColor = '#87CEEB';
                 if(owner === 'ai') building.el.style.backgroundColor = '#F08080';
@@ -569,18 +580,18 @@
                 const opponent = owner === 'player' ? 'ai' : 'player';
                 const spellEffectEl = document.createElement('div');
                 spellEffectEl.className = 'absolute border-4 rounded-full pointer-events-none';
-                spellEffectEl.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%) scale(0.5)`;
+                spellEffectEl.style.left = `${x}%`;
+                spellEffectEl.style.top = `${y}%`;
                 spellEffectEl.style.width = `${spellData.radius * 2}%`;
                 spellEffectEl.style.height = `${spellData.radius * 2}%`;
+                spellEffectEl.style.transform = 'translate(-50%, -50%) scale(0.5)';
                 spellEffectEl.style.opacity = '1';
                 spellEffectEl.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-                const colors = {
-                    fireball: 'rgba(255, 100, 0, 0.8)', arrows: 'rgba(150, 150, 150, 0.8)', zap: 'rgba(100, 100, 255, 0.8)', freeze: 'rgba(173, 216, 230, 0.8)', rage: 'rgba(255, 0, 255, 0.8)', rocket: 'rgba(200, 50, 50, 0.8)', lightning: 'rgba(200, 200, 255, 0.9)', tornado: 'rgba(200, 200, 200, 0.6)'
-                };
+                const colors = { fireball: 'rgba(255, 100, 0, 0.8)', arrows: 'rgba(150, 150, 150, 0.8)', zap: 'rgba(100, 100, 255, 0.8)', freeze: 'rgba(173, 216, 230, 0.8)', rage: 'rgba(255, 0, 255, 0.8)', rocket: 'rgba(200, 50, 50, 0.8)', lightning: 'rgba(200, 200, 255, 0.9)' };
                 spellEffectEl.style.borderColor = colors[spellId] || 'rgba(255, 255, 255, 0.5)';
                 gameBoard.appendChild(spellEffectEl);
                 requestAnimationFrame(() => {
-                    spellEffectEl.style.transform = `translate(-50%, -50%) translate(${x}%, ${y}%) scale(1)`;
+                    spellEffectEl.style.transform = 'translate(-50%, -50%) scale(1)';
                     spellEffectEl.style.opacity = '0';
                 });
                 setTimeout(() => spellEffectEl.remove(), 300);
@@ -591,7 +602,7 @@
                     potentialTargets.slice(0, spellData.strikeCount).forEach(target => dealSingleDamage({ damage: spellData.damage, stunDuration: 500 }, target));
                     return;
                 }
-                
+
                 if (spellId === 'theLog') {
                     gameObjects.filter(o => o.owner === opponent && o.hp > 0 && o.type === 'ground').forEach(t => {
                         if (Math.abs(t.x - x) < spellData.width / 2 && (owner === 'player' ? (t.y < y) : (t.y > y))) {
@@ -601,220 +612,24 @@
                     return;
                 }
 
-                if (spellId === 'rage' || spellId === 'freeze' || spellId === 'tornado') {
+                if (spellId === 'rage' || spellId === 'freeze') {
                     const targets = gameObjects.filter(obj => obj.hp > 0 && getDistance({x, y}, obj) <= spellData.radius);
                     targets.forEach(target => {
                         if (spellId === 'rage' && target.owner === owner) {
                             target.rageUntil = Date.now() + spellData.duration;
                             if (target.originalSpeed) target.speed = target.originalSpeed * spellData.speedBoost;
                             if (target.originalAttackSpeed) target.attackSpeed = target.originalAttackSpeed / spellData.attackSpeedBoost;
-                        } else if (spellId === 'freeze') {
+                        }
+                        if (spellId === 'freeze' && target.owner !== owner) {
                             target.frozenUntil = Date.now() + spellData.duration;
-                        } else if (spellId === 'tornado' && target.objType === 'troop') {
-                            // Calculate force vector towards the center of the spell
-                            const dx = x - target.x;
-                            const dy = y - target.y;
-                            target.forceX = dx * spellData.pullStrength;
-                            target.forceY = dy * spellData.pullStrength;
-                            target.tornadoUntil = Date.now() + spellData.duration;
+                            target.el.style.filter = 'saturate(0.5) brightness(1.2)';
                         }
                     });
                     return;
                 }
 
-                gameObjects.filter(o => o.owner === opponent && o.hp > 0 && getDistance({x, y}, o) <= spellData.radius).forEach(t => {
-                    dealSingleDamage({ damage: spellData.damage }, t);
-                });
-            }
-            
-            function gameLoop(currentTime) {
-                const deltaTime = (currentTime - lastFrameTime) / 1000;
-                lastFrameTime = currentTime;
-                
-                // Game Logic Update
-                const now = Date.now();
-                gameObjects.forEach(obj => {
-                    if (obj.hp <= 0) return;
-
-                    // Apply frozen effect
-                    if (obj.frozenUntil > now) {
-                        return;
-                    }
-                    if (obj.stunnedUntil > now) {
-                        return;
-                    }
-
-                    // Handle Tornado effect
-                    if (obj.tornadoUntil && obj.tornadoUntil > now) {
-                        obj.x += obj.forceX * 60 * deltaTime;
-                        obj.y += obj.forceY * 60 * deltaTime;
-                        obj.dirty = true;
-                    } else if (obj.tornadoUntil) {
-                        obj.tornadoUntil = 0;
-                        obj.forceX = 0;
-                        obj.forceY = 0;
-                    }
-
-
-                    // Handle buildings spawning
-                    if (obj.objType === 'building' && obj.spawnSpeed && now - obj.lastSpawn > obj.spawnSpeed) {
-                        createTroop(obj.owner, obj.spawnId, obj.x, obj.y);
-                        obj.lastSpawn = now;
-                    }
-
-                    // Handle elixir collector
-                    if (obj.objType === 'building' && obj.givesElixir && now - obj.lastSpawn > obj.spawnSpeed) {
-                        if (obj.owner === 'player') {
-                            elixir = Math.min(maxElixir, elixir + 1);
-                        } else {
-                            aiElixir = Math.min(maxElixir, aiElixir + 1);
-                        }
-                        obj.lastSpawn = now;
-                    }
-
-                    // Find and attack target
-                    if (obj.objType !== 'spell' && obj.objType !== 'projectile' && obj.damage) {
-                        if (!obj.target || obj.target.hp <= 0 || getDistance(obj, obj.target) > (obj.range || 1.5)) {
-                            obj.target = getClosestTarget(obj);
-                        }
-                        
-                        if (obj.target) {
-                            if (getDistance(obj, obj.target) <= (obj.range || 1.5)) {
-                                if (now - obj.lastAttack > obj.attackSpeed) {
-                                    attack(obj, obj.target);
-                                    obj.lastAttack = now;
-                                }
-                            } else {
-                                // Move towards target
-                                if (obj.speed > 0) {
-                                    const angle = Math.atan2(obj.target.y - obj.y, obj.target.x - obj.x);
-                                    obj.x += (obj.speed * 60 * deltaTime) * Math.cos(angle);
-                                    obj.y += (obj.speed * 60 * deltaTime) * Math.sin(angle);
-                                    obj.dirty = true;
-                                }
-                            }
-                        }
-                    }
-
-                    // Update King Tower activation
-                    if (obj.objType === 'tower' && obj.type === 'king' && !obj.isActivated) {
-                        const princessTowers = gameObjects.filter(o => o.owner === obj.owner && o.type === 'princess');
-                        if (princessTowers.length < 2) {
-                            obj.isActivated = true;
-                        }
-                    }
-                });
-
-                // Move and handle projectiles
-                const projectiles = gameObjects.filter(o => o.objType === 'projectile');
-                projectiles.forEach(p => {
-                    const target = gameObjects.find(obj => obj.id === p.targetId);
-                    if (!target || target.hp <= 0) {
-                        p.el.remove();
-                        gameObjects = gameObjects.filter(obj => obj.id !== p.id);
-                        return;
-                    }
-                    const dx = target.x - p.x;
-                    const dy = target.y - p.y;
-                    const distance = Math.sqrt(dx*dx + dy*dy);
-                    if (distance < 1) { // Hit
-                        dealSingleDamage(p.damage, target);
-                        p.el.remove();
-                        gameObjects = gameObjects.filter(obj => obj.id !== p.id);
-                        if (p.splashRadius) {
-                            gameObjects.filter(obj => obj.owner !== target.owner && obj.hp > 0 && getDistance(target, obj) <= p.splashRadius).forEach(t => dealSingleDamage(p.damage, t));
-                        }
-                        return;
-                    }
-                    p.x += (dx / distance) * p.speed;
-                    p.y += (dy / distance) * p.speed;
-                    p.dirty = true;
-                });
-                
-                // Remove dead objects
-                gameObjects.filter(o => o.hp <= 0).forEach(obj => {
-                    obj.el.remove();
-                    // Handle death effects
-                    if (obj.dropsRageOnDeath) {
-                        castSpell(obj.owner, 'rage', obj.x, obj.y);
-                    }
-                    if (obj.spawnOnDeath) {
-                         for (let i = 0; i < obj.spawnOnDeath; i++) createTroop(obj.owner, obj.spawnId, obj.x, obj.y);
-                    }
-                    if (obj.healAmount) {
-                         gameObjects.filter(o => o.owner === obj.owner && o.hp > 0 && o.objType === 'troop' && getDistance(obj, o) < 20).forEach(o => {
-                             o.hp = Math.min(o.maxHp, o.hp + obj.healAmount);
-                             o.dirty = true;
-                         });
-                    }
-                });
-                gameObjects = gameObjects.filter(o => o.hp > 0);
-                
-                // Render Update (only for 'dirty' objects)
-                gameObjects.forEach(obj => {
-                    if (obj.dirty) {
-                        if (obj.objType === 'troop' || obj.objType === 'projectile') {
-                            obj.el.style.transform = `translate(-50%, -50%) translate(${obj.x}%, ${obj.y}%)`;
-                        } else {
-                            obj.el.style.transform = `translate(-50%, -50%) translate(${obj.x}%, ${obj.y}%)`;
-                        }
-                        const healthPercentage = (obj.hp / obj.maxHp) * 100;
-                        if (obj.healthBarInner) {
-                             obj.healthBarInner.style.width = `${healthPercentage}%`;
-                             if (healthPercentage < 25) {
-                                obj.healthBarInner.style.backgroundColor = '#FF0000'; // Red
-                            } else if (healthPercentage < 50) {
-                                obj.healthBarInner.style.backgroundColor = '#FFD700'; // Gold
-                            } else {
-                                obj.healthBarInner.style.backgroundColor = '#4CAF50'; // Green
-                            }
-                        }
-                        obj.dirty = false;
-                    }
-                });
-
-                checkWinCondition();
-                requestAnimationFrame(gameLoop);
-            }
-
-            function getClosestTarget(obj) {
-                const opponent = obj.owner === 'player' ? 'ai' : 'player';
-                let potentialTargets = gameObjects.filter(target => {
-                    if (target.owner !== opponent || target.hp <= 0) return false;
-                    if (obj.targets === 'buildings' && target.objType === 'troop') return false;
-                    if (obj.targets === 'ground' && target.type === 'air') return false;
-                    if (obj.targets === 'any' && (target.type === 'air' || target.type === 'ground')) return true;
-
-                    // Princess tower special logic
-                    if (obj.objType === 'tower' && obj.type === 'princess' && target.objType === 'tower') {
-                         return false;
-                    }
-                     if (obj.objType === 'tower' && obj.type === 'princess') {
-                        if (obj.owner === 'player' && target.y < 50) return false;
-                        if (obj.owner === 'ai' && target.y > 50) return false;
-                    }
-                    
-                    return true;
-                });
-                
-                // If a king tower is not activated, it only targets what attacks it
-                if (obj.objType === 'tower' && obj.type === 'king' && !obj.isActivated) {
-                    potentialTargets = potentialTargets.filter(t => t.target && t.target.id === obj.id);
-                }
-
-                if (potentialTargets.length === 0) return null;
-
-                let closest = null;
-                let minDistance = Infinity;
-                
-                potentialTargets.forEach(target => {
-                    const distance = getDistance(obj, target);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closest = target;
-                    }
-                });
-                return closest;
+                gameObjects.filter(obj => obj.owner === opponent && obj.hp > 0 && getDistance({x, y}, obj) <= spellData.radius)
+                    .forEach(target => dealSingleDamage(spellData, target));
             }
 
             function getDistance(obj1, obj2) {
@@ -823,205 +638,337 @@
                 return Math.sqrt(dx * dx + dy * dy);
             }
 
-            function attack(attacker, target) {
-                const now = Date.now();
-                
-                // Projectile attack
-                if (attacker.objType === 'troop' || attacker.objType === 'tower' || attacker.objType === 'building') {
-                    if (attacker.projectile) {
-                        createProjectile(attacker, target);
-                    } else if (attacker.attackType === 'melee-splash') {
-                        dealDamage(attacker, target);
-                        const nearby = gameObjects.filter(obj => obj.owner !== attacker.owner && obj.hp > 0 && getDistance(target, obj) <= (attacker.splashRadius || 10));
-                        nearby.forEach(t => dealDamage(attacker, t));
-                    } else if (attacker.splashDamage) {
-                         const damage = attacker.damage;
-                         dealDamage(attacker, target);
-                         gameObjects.filter(obj => obj.owner !== attacker.owner && obj.hp > 0 && getDistance(target, obj) <= (attacker.splashRadius || 15)).forEach(t => dealDamage({damage: damage * 0.5}, t));
-                    } else if (attacker.attackType === 'boomerang') {
-                        // Projectile attack with return
-                         createProjectile(attacker, target, true);
-                    } else if (attacker.chainTargetCount) {
-                        dealDamage(attacker, target);
-                        let currentTarget = target;
-                        for(let i = 1; i < attacker.chainTargetCount; i++) {
-                            const nextTarget = gameObjects.filter(obj => obj.owner !== attacker.owner && obj.hp > 0 && obj.id !== currentTarget.id && getDistance(currentTarget, obj) < 15)
-                                .sort((a,b) => getDistance(currentTarget, a) - getDistance(currentTarget, b))[0];
-                            if (nextTarget) {
-                                dealDamage({ damage: attacker.damage * 0.8 }, nextTarget);
-                                currentTarget = nextTarget;
-                            } else {
-                                break;
-                            }
-                        }
+            function gameLoop() {
+                gameObjects.forEach(obj => {
+                    if (obj.hp <= 0) return;
+                    
+                    if (Date.now() < obj.frozenUntil) {
+                        obj.speed = 0;
+                        obj.el.style.filter = 'saturate(0.5) brightness(1.2)';
+                        return;
                     } else {
-                        dealDamage(attacker, target);
+                        obj.speed = obj.originalSpeed;
+                        obj.el.style.filter = '';
                     }
+                    if (Date.now() < obj.stunnedUntil) {
+                        return;
+                    }
+                    
+                    // Handle Rage
+                    if(obj.rageUntil > Date.now()) {
+                        obj.speed = obj.originalSpeed * CARD_DATA.rage.speedBoost;
+                        obj.attackSpeed = obj.originalAttackSpeed / CARD_DATA.rage.attackSpeedBoost;
+                        obj.el.style.filter = 'hue-rotate(180deg) saturate(1.5)';
+                    } else {
+                        obj.speed = obj.originalSpeed;
+                        obj.attackSpeed = obj.originalAttackSpeed;
+                        obj.el.style.filter = '';
+                    }
+
+                    if (obj.objType === 'troop') {
+                        updateTroop(obj);
+                    } else if (obj.objType === 'building') {
+                        updateBuilding(obj);
+                    } else if (obj.objType === 'tower') {
+                        updateTower(obj);
+                    }
+                });
+
+                // Projectile movement
+                const projectilesToRemove = [];
+                gameObjects.filter(o => o.objType === 'projectile').forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.el.style.left = `${p.x}%`;
+                    p.el.style.top = `${p.y}%`;
+
+                    if (getDistance(p, p.target) < 1) {
+                        dealSingleDamage(p, p.target);
+                        projectilesToRemove.push(p.id);
+                        p.el.remove();
+                    } else if (p.x < 0 || p.x > 100 || p.y < 0 || p.y > 100) {
+                        projectilesToRemove.push(p.id);
+                        p.el.remove();
+                    }
+                });
+                gameObjects = gameObjects.filter(obj => !projectilesToRemove.includes(obj.id));
+
+                const deadObjects = gameObjects.filter(obj => obj.hp <= 0);
+                deadObjects.forEach(obj => {
+                    if (obj.el) obj.el.remove();
+                    if (obj.dropsRageOnDeath) {
+                        castSpell(obj.owner, 'rage', obj.x, obj.y);
+                    }
+                    if (obj.spawnOnDeath) {
+                        for(let i=0; i < obj.spawnOnDeath; i++) createTroop(obj.owner, obj.spawnId, obj.x, obj.y);
+                    }
+                });
+                gameObjects = gameObjects.filter(obj => obj.hp > 0);
+            }
+
+            function updateTroop(troop) {
+                if (troop.hp <= 0) return;
+                
+                let target = getNearestTarget(troop);
+                if (target) {
+                    troop.target = target;
+                    const dist = getDistance(troop, target);
+                    if (dist > troop.range) {
+                        if (troop.canCharge && !troop.isCharging && dist > troop.range * 1.5) {
+                            troop.isCharging = true;
+                            troop.chargeDistance = dist;
+                            troop.el.style.transition = 'transform 0.1s linear, top 0.1s linear, left 0.1s linear, filter 0.2s';
+                            troop.el.style.filter = 'brightness(1.5)';
+                        }
+                        const currentSpeed = troop.isCharging ? troop.speed * 2.5 : troop.speed;
+                        const angle = Math.atan2(target.y - troop.y, target.x - troop.x);
+                        troop.x += currentSpeed * Math.cos(angle) / 10;
+                        troop.y += currentSpeed * Math.sin(angle) / 10;
+                        troop.el.style.left = `${troop.x}%`;
+                        troop.el.style.top = `${troop.y}%`;
+                        troop.el.style.transform = `translate(-50%, -50%) rotate(${(angle * 180 / Math.PI) + 90}deg)`;
+                    } else {
+                        if (troop.isCharging) {
+                            troop.isCharging = false;
+                            troop.el.style.filter = '';
+                        }
+                        if (Date.now() - troop.lastAttack > troop.attackSpeed) {
+                            if (troop.attackType === 'melee-splash') {
+                                meleeSplashAttack(troop, target);
+                            } else {
+                                attack(troop, target);
+                            }
+                            troop.lastAttack = Date.now();
+                        }
+                    }
+                } else {
+                    troop.target = null;
                 }
             }
-            
-            function createProjectile(attacker, target, isBoomerang = false) {
+
+            function meleeSplashAttack(attacker, target) {
+                const splashTargets = gameObjects.filter(o => o.owner !== attacker.owner && getDistance(target, o) < 15);
+                splashTargets.forEach(t => dealSingleDamage(attacker, t));
+            }
+
+            function attack(attacker, target) {
+                if (attacker.objType === 'troop' && attacker.projectileSpeed) {
+                    createProjectile(attacker, target);
+                } else {
+                    dealSingleDamage(attacker, target);
+                }
+            }
+
+            function createProjectile(attacker, target) {
                 const projectile = {
                     id: nextId++,
                     objType: 'projectile',
-                    owner: attacker.owner,
                     x: attacker.x,
                     y: attacker.y,
-                    speed: 2,
                     damage: attacker.damage,
-                    targetId: target.id,
-                    splashRadius: attacker.splashRadius || 0,
-                    el: document.createElement('div'),
-                    dirty: true
+                    target: target,
+                    speed: attacker.projectileSpeed,
+                    el: document.createElement('div')
                 };
-                if (isBoomerang) projectile.isBoomerang = true;
-                
                 projectile.el.className = 'projectile';
-                projectile.el.style.transform = `translate(-50%, -50%) translate(${projectile.x}%, ${projectile.y}%)`;
                 gameBoard.appendChild(projectile.el);
                 gameObjects.push(projectile);
             }
 
-            function dealDamage(attacker, target) {
-                let damageToDeal = attacker.damage;
-                if (target.shieldHp > 0) {
-                    target.shieldHp -= damageToDeal;
-                    if (target.shieldHp < 0) {
-                        target.hp += target.shieldHp;
-                        target.shieldHp = 0;
+            function getNearestTarget(obj) {
+                const opponent = obj.owner === 'player' ? 'ai' : 'player';
+                const targets = gameObjects.filter(t => t.owner === opponent && t.hp > 0);
+                
+                const filterByType = (target) => {
+                    if (obj.targets === 'buildings') {
+                        return target.objType === 'tower' || target.objType === 'building';
                     }
-                } else {
-                    target.hp -= damageToDeal;
+                    if (obj.targets === 'ground') {
+                        return target.type !== 'air';
+                    }
+                    return true;
+                };
+
+                const validTargets = targets.filter(filterByType);
+                if (validTargets.length === 0) {
+                    if (obj.owner === 'ai') return gameObjects.find(t => t.objType === 'tower' && t.owner === 'player');
+                    return null;
                 }
-                target.dirty = true;
+                validTargets.sort((a, b) => getDistance(obj, a) - getDistance(obj, b));
+                return validTargets[0];
+            }
+
+            function updateBuilding(building) {
+                if (building.hp <= 0) return;
                 
-                if (attacker.stunDuration) target.stunnedUntil = Date.now() + attacker.stunDuration;
-                
-                if (target.hp <= 0 && target.objType === 'tower' && target.type === 'princess') {
-                    const kingTower = gameObjects.find(o => o.owner === target.owner && o.type === 'king');
-                    if (kingTower) kingTower.isActivated = true;
+                if (building.lifetime && Date.now() - building.lastSpawn > building.lifetime * 1000) {
+                    building.hp = 0;
+                    return;
                 }
-                if (attacker.damageRamp) {
-                    attacker.currentDamage = Math.min(attacker.maxDamage, attacker.currentDamage * attacker.damageRamp);
+
+                if (building.spawnId && Date.now() - building.lastSpawn > building.spawnSpeed) {
+                    createTroop(building.owner, building.spawnId, building.x, building.y);
+                    building.lastSpawn = Date.now();
                 }
                 
-                if (attacker.pushback) {
-                    const angle = Math.atan2(target.y - attacker.y, target.x - attacker.x);
-                    target.x += attacker.pushback * Math.cos(angle);
-                    target.y += attacker.pushback * Math.sin(angle);
-                    target.dirty = true;
+                if (building.givesElixir && Date.now() - building.lastSpawn > building.spawnSpeed) {
+                    if (building.owner === 'player') elixir += 1;
+                    else aiElixir += 1;
+                    building.lastSpawn = Date.now();
+                }
+
+                if (building.range > 0) {
+                    let target = getNearestTarget(building);
+                    if (target && getDistance(building, target) <= building.range) {
+                        if (Date.now() - building.lastAttack > building.attackSpeed) {
+                            attack(building, target);
+                            building.lastAttack = Date.now();
+                        }
+                    }
                 }
             }
             
-            function dealSingleDamage(damageObj, target) {
+            function updateTower(tower) {
+                if(tower.isActivated === false) {
+                    const opponent = tower.owner === 'player' ? 'ai' : 'player';
+                    const kingTowerDestroyed = gameObjects.find(o => o.objType === 'tower' && o.owner === opponent && o.type === 'king' && o.hp <= 0);
+                    const princessTowerDestroyed = gameObjects.find(o => o.objType === 'tower' && o.owner === opponent && o.type === 'princess' && o.hp <= 0);
+                    if(kingTowerDestroyed || princessTowerDestroyed) {
+                        tower.isActivated = true;
+                    }
+                }
+                if (tower.hp <= 0) return;
+
+                if (tower.isActivated && Date.now() - tower.lastAttack > tower.attackSpeed) {
+                    const opponent = tower.owner === 'player' ? 'ai' : 'player';
+                    const target = getNearestTarget(tower);
+                    if (target && getDistance(tower, target) < tower.range) {
+                        attack(tower, target);
+                        tower.lastAttack = Date.now();
+                    }
+                }
+            }
+
+            function dealSingleDamage(attacker, target) {
+                let damage = attacker.damage;
                 if (target.shieldHp > 0) {
-                    target.shieldHp -= damageObj.damage;
+                    target.shieldHp -= damage;
                     if (target.shieldHp < 0) {
-                        target.hp += target.shieldHp;
+                        target.hp += target.shieldHp; // Subtract remaining damage from HP
                         target.shieldHp = 0;
                     }
                 } else {
-                    target.hp -= damageObj.damage;
+                    target.hp -= damage;
                 }
-                target.dirty = true;
+                updateHealthBar(target);
+                if (target.hp <= 0) {
+                    checkGameEnd();
+                }
+            }
 
-                if (damageObj.stunDuration) target.stunnedUntil = Date.now() + damageObj.stunDuration;
+            function updateHealthBar(obj) {
+                if (obj.hp <= 0) {
+                    obj.healthBarInner.style.width = '0%';
+                } else {
+                    let healthPercentage = (obj.hp / obj.maxHp) * 100;
+                    obj.healthBarInner.style.width = `${healthPercentage}%`;
+                    if (healthPercentage > 50) {
+                        obj.healthBarInner.style.backgroundColor = '#4CAF50';
+                    } else if (healthPercentage > 20) {
+                        obj.healthBarInner.style.backgroundColor = '#FFD700';
+                    } else {
+                        obj.healthBarInner.style.backgroundColor = '#FF6347';
+                    }
+                }
             }
 
             function generateElixir() {
-                elixir = Math.min(maxElixir, elixir + 1);
-                aiElixir = Math.min(maxElixir, aiElixir + 1);
+                elixir = Math.min(elixir + 1, maxElixir);
+                aiElixir = Math.min(aiElixir + 1, maxElixir);
                 updateUI();
-                drawCards();
             }
 
             function updateTimer() {
                 gameTime--;
                 timerEl.textContent = gameTime;
                 if (gameTime <= 0) {
+                    clearInterval(timerInterval);
+                    clearInterval(gameLoopInterval);
+                    clearInterval(elixirInterval);
+                    clearInterval(aiInterval);
                     endGame();
                 }
             }
 
             function aiLogic() {
-                const now = Date.now();
-                if (aiElixir < 2) return;
-                
-                // Get AI towers and troops
-                const aiObjects = gameObjects.filter(obj => obj.owner === 'ai' && obj.hp > 0);
-                const aiTowers = aiObjects.filter(obj => obj.objType === 'tower');
-                
-                // Get Player troops on the AI's side
-                const playerThreats = gameObjects.filter(obj => obj.owner === 'player' && obj.hp > 0 && obj.y < 50);
+                const aiTowers = gameObjects.filter(obj => obj.owner === 'ai' && obj.objType === 'tower');
+                const playerTowers = gameObjects.filter(obj => obj.owner === 'player' && obj.objType === 'tower');
+                const allPlayerObjects = gameObjects.filter(obj => obj.owner === 'player');
+                const allAiObjects = gameObjects.filter(obj => obj.owner === 'ai');
 
-                let cardToPlay = null;
-                let cardData = null;
-                const availableCards = Object.keys(CARD_DATA).filter(cardId => {
-                    const data = CARD_DATA[cardId];
-                    return data.cost <= aiElixir && data.cardType !== 'spell';
-                });
-
-                if (playerThreats.length > 0) {
-                    // Defend mode
-                    const threateningTroop = playerThreats.sort((a,b) => getDistance(aiTowers[0], a) - getDistance(aiTowers[0], b))[0];
-                    if (threateningTroop) {
-                        const counterCards = availableCards.filter(cardId => {
-                            const data = CARD_DATA[cardId];
-                            return data.type === threateningTroop.type;
-                        }).sort((a,b) => CARD_DATA[a].cost - CARD_DATA[b].cost);
-                        cardToPlay = counterCards[0] || availableCards[0];
+                if (aiElixir >= 6) {
+                    if (Math.random() < 0.3 && playerTowers.length > 0) {
+                        const targetTower = playerTowers[Math.floor(Math.random() * playerTowers.length)];
+                        if(targetTower) {
+                            const availableCards = Object.values(CARD_DATA).filter(card => card.cost <= aiElixir && card.cardType !== 'spell');
+                            if (availableCards.length > 0) {
+                                const cardToPlay = availableCards[Math.floor(Math.random() * availableCards.length)];
+                                aiElixir -= cardToPlay.cost;
+                                if (cardToPlay.cardType === 'troop') createTroop('ai', cardToPlay.name.replace(/ /g, ''), targetTower.x + (Math.random() - 0.5) * 20, targetTower.y + (Math.random() - 0.5) * 20);
+                                else if (cardToPlay.cardType === 'building') createBuilding('ai', cardToPlay.name.replace(/ /g, ''), targetTower.x + (Math.random() - 0.5) * 10, targetTower.y + (Math.random() - 0.5) * 10);
+                            }
+                        }
                     }
-                } else {
-                    // Attack mode
-                    const attackCards = availableCards.filter(cardId => CARD_DATA[cardId].targets === 'buildings');
-                    cardToPlay = attackCards.length > 0 ? attackCards[0] : availableCards[0];
                 }
 
-                if (cardToPlay) {
-                    cardData = CARD_DATA[cardToPlay];
-                    if (aiElixir >= cardData.cost) {
-                        let x, y;
-                        if (cardData.canPlaceAnywhere) {
-                            x = Math.random() * 80 + 10;
-                            y = Math.random() * 80 + 10;
-                        } else {
-                            x = Math.random() * 80 + 10;
-                            y = Math.random() * 45 + 5;
-                        }
-                        
-                        aiElixir -= cardData.cost;
-                        if (cardData.cardType === 'troop') createTroop('ai', cardToPlay, x, y);
-                        else createBuilding('ai', cardToPlay, x, y);
+                if (aiElixir >= 4) {
+                    const availableCards = Object.values(CARD_DATA).filter(card => card.cost <= aiElixir && card.cardType !== 'spell');
+                    if (availableCards.length > 0) {
+                        const cardToPlay = availableCards[Math.floor(Math.random() * availableCards.length)];
+                        aiElixir -= cardToPlay.cost;
+                        const x = Math.random() * 80 + 10;
+                        const y = Math.random() * 40 + 10;
+                        if (cardToPlay.cardType === 'troop') createTroop('ai', cardToPlay.name.replace(/ /g, ''), x, y);
+                        else if (cardToPlay.cardType === 'building') createBuilding('ai', cardToPlay.name.replace(/ /g, ''), x, y);
                     }
                 }
                 updateUI();
             }
-            
-            function checkWinCondition() {
-                const playerTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'player').length;
-                const aiTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'ai').length;
-                
-                if (playerTowers === 0) {
-                    endGame('lose');
-                } else if (aiTowers === 0) {
-                    endGame('win');
+
+            function checkGameEnd() {
+                const playerTowers = gameObjects.filter(obj => obj.owner === 'player' && obj.objType === 'tower').length;
+                const aiTowers = gameObjects.filter(obj => obj.owner === 'ai' && obj.objType === 'tower').length;
+                playerTowersEl.textContent = playerTowers;
+                aiTowersEl.textContent = aiTowers;
+
+                if (playerTowers === 0 || aiTowers === 0) {
+                    endGame();
                 }
             }
 
-            function endGame(result) {
+            function endGame() {
+                clearInterval(gameLoopInterval);
                 clearInterval(timerInterval);
                 clearInterval(elixirInterval);
                 clearInterval(aiInterval);
-                
+
                 let title = '';
                 let text = '';
-                
-                if (result === 'win') {
-                    title = 'You Win!';
-                    text = 'Congratulations, you destroyed all of the AI\'s towers!';
-                } else if (result === 'lose') {
+                const playerKing = gameObjects.find(o => o.objType === 'tower' && o.owner === 'player' && o.type === 'king');
+                const aiKing = gameObjects.find(o => o.objType === 'tower' && o.owner === 'ai' && o.type === 'king');
+
+                if (playerKing && playerKing.hp <= 0) {
                     title = 'You Lose!';
-                    text = 'All of your towers have been destroyed!';
+                    text = "Your King's tower was destroyed!";
+                } else if (aiKing && aiKing.hp <= 0) {
+                    title = 'You Win!';
+                    text = "The AI's King's tower was destroyed!";
+                } else if (playerTowers === 0) {
+                    title = 'You Lose!';
+                    text = "All your towers were destroyed!";
+                } else if (aiTowers === 0) {
+                    title = 'You Win!';
+                    text = "All the AI's towers were destroyed!";
                 } else {
                     const pTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'player').length;
                     const aTowers = gameObjects.filter(o => o.objType === 'tower' && o.owner === 'ai').length;
