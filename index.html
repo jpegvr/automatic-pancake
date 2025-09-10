@@ -1,94 +1,274 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>TOWER DUEL</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tower Duel Mini Royale</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
 <style>
-:root { --board-bg: #4CAF50; }
-body{ font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; touch-action:none; }
-.font-bangers{ font-family:'Bangers',cursive; }
-#game-board{ background-color:var(--board-bg); background-image: linear-gradient(to right, rgba(0,0,0,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px); background-size:20px 20px; position:relative; overflow:hidden; border:4px solid #8B4513; }
-.bridge{ background-color:#DAA520; border:2px solid #8B4513; z-index:1; }
-.river{ background:linear-gradient(to right,#4682B4,#87CEEB); z-index:0; }
-.tower, .building, .troop { position:absolute; top:0; left:0; transform:translate(-50%,-50%); will-change: transform, left, top, opacity; }
-.tower{ z-index:10; display:flex; align-items:center; justify-content:center; flex-direction:column; border-radius:50% 50% 10% 10% / 20% 20% 10% 10%; box-shadow:0 4px 8px rgba(0,0,0,0.3); }
-.troop{ z-index:20; display:flex; align-items:center; justify-content:center; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2); transition: filter 80ms linear; }
-.health-bar{ position:absolute; bottom:-8px; left:10%; width:80%; height:5px; background:#E0E0E0; border-radius:2.5px; overflow:hidden; }
-.health-bar-inner{ height:100%; background:#4CAF50; border-radius:2.5px; transition: width 120ms linear; }
-.projectile{ position:absolute; border-radius:50%; width:10px; height:10px; z-index:50; box-shadow:0 0 5px #FFD700; pointer-events:none; transform:translateZ(0); transition: transform 300ms linear, opacity 300ms linear; }
-.card{ transition:transform .18s, box-shadow .18s; cursor:pointer; user-select:none; }
-.card.selected{ transform: translateY(-12px) scale(1.06); box-shadow: 0 0 20px rgba(76,175,80,0.85); }
-.card.disabled{ filter:grayscale(100%); cursor:not-allowed; }
-#message-modal{ transition: opacity .28s ease-in-out; }
-#message-box{ animation: slide-in 0.45s forwards; }
-@keyframes slide-in{ 0%{ transform:translateY(-50px); opacity:0 } 100%{ transform:translateY(0); opacity:1 } }
+body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background-color:#1F2937; color:white; overflow-x:hidden;}
+.font-bangers { font-family: 'Bangers', cursive; }
+.card { cursor:pointer; transition: transform .2s; }
+.card.selected { transform:translateY(-10px) scale(1.05); box-shadow:0 0 10px #fff; }
+.card.disabled { filter:grayscale(100%); cursor:not-allowed; }
+.hidden { display:none; }
+#game-board { background:#4CAF50; position:relative; width:100%; aspect-ratio:9/16; margin:auto; border:4px solid #8B4513; border-radius:12px; overflow:hidden; }
+.river { position:absolute; width:100%; height:8%; top:46%; background:linear-gradient(to right,#4682B4,#87CEEB); }
+.bridge { position:absolute; width:20%; height:8%; background:#DAA520; top:46%; border-radius:6px; }
+.bridge.left { left:16%; }
+.bridge.right { right:16%; }
+.troop { position:absolute; width:40px; height:40px; background:#f59e0b; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; text-align:center; }
+.enemy { background:red; }
+#card-hand { display:flex; gap:8px; overflow-x:auto; margin-top:8px; }
+#card-collection { display:flex; flex-wrap:wrap; gap:6px; max-height:300px; overflow-y:auto; }
+#current-deck { display:flex; flex-wrap:wrap; gap:6px; min-height:100px; }
+.deck-tab.active { background:#6B21A8 !important; }
 </style>
 </head>
-<body class="bg-gray-800 flex flex-col items-center justify-center min-h-screen p-4 text-white">
+<body>
 
-<!-- Title Screen -->
-<div id="title-screen" class="flex flex-col items-center justify-center min-h-screen w-full">
-  <h1 class="text-6xl font-bangers text-yellow-400 mb-6 tracking-wider">TOWER DUEL</h1>
+<!-- TITLE SCREEN -->
+<div id="title-screen" class="flex flex-col items-center justify-center min-h-screen">
+  <h1 class="text-6xl font-bangers text-yellow-400 mb-6">TOWER DUEL</h1>
   <button id="start-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-2xl mb-4">Quick Start</button>
   <button id="deck-button" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-lg text-2xl">Deck Builder</button>
 </div>
 
-<!-- Game Container -->
-<div id="game-container" class="hidden flex flex-col items-center w-full">
-  <div class="w-full max-w-lg aspect-[9/16] relative">
-    <div id="game-board" class="w-full h-full rounded-lg shadow-2xl">
-      <div class="river absolute w-full h-1/12 top-1/2 -translate-y-1/2"></div>
-      <div class="bridge absolute w-1/5 h-1/12 left-1/6 top-1/2 -translate-y-1/2 rounded"></div>
-      <div class="bridge absolute w-1/5 h-1/12 right-1/6 top-1/2 -translate-y-1/2 rounded"></div>
-    </div>
-
-    <div class="absolute top-2 left-2 text-lg font-bold bg-black bg-opacity-50 px-2 py-1 rounded">AI: <span id="ai-towers">3</span></div>
-    <div class="absolute top-2 right-2 text-lg font-bold bg-black bg-opacity-50 px-2 py-1 rounded">Time: <span id="timer">180</span>s</div>
-    <div class="absolute bottom-2 left-2 text-lg font-bold bg-black bg-opacity-50 px-2 py-1 rounded">You: <span id="player-towers">3</span></div>
+<!-- GAME SCREEN -->
+<div id="game-container" class="hidden flex flex-col items-center w-full p-4">
+  <div id="game-board">
+    <div class="river"></div>
+    <div class="bridge left"></div>
+    <div class="bridge right"></div>
   </div>
-
   <div class="w-full max-w-lg mt-4">
-    <div class="w-full bg-gray-600 rounded-full h-6 border-2 border-purple-400 mb-2">
-      <div id="elixir-bar-fill" class="bg-purple-600 h-full rounded-full" style="width:30%"></div>
-      <div class="relative -top-6 w-full h-full flex items-center justify-center"><span id="elixir-count" class="font-bold text-lg">3</span> / 10</div>
+    <div class="flex justify-between mb-2">
+      <span>Player Towers: <span id="player-towers">3</span></span>
+      <span>AI Towers: <span id="ai-towers">3</span></span>
+      <span>Time: <span id="timer">180</span>s</span>
     </div>
-    <div id="card-hand" class="grid grid-cols-4 gap-2 overflow-x-auto"></div>
+    <div id="card-hand"></div>
+    <div class="flex items-center mt-2">
+      <div class="w-full bg-gray-600 rounded-full h-6 mr-2 border-2 border-purple-400">
+        <div id="elixir-bar-fill" class="bg-purple-600 h-full rounded-full" style="width:30%"></div>
+      </div>
+      <span id="elixir-count">3</span> / 10
+    </div>
   </div>
 </div>
 
-<!-- Message Modal -->
-<div id="message-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-  <div id="message-box" class="bg-gray-700 p-8 rounded-lg shadow-2xl text-center border-4 border-yellow-400">
-    <h2 id="message-title" class="text-4xl font-bangers text-yellow-400 mb-4"></h2>
-    <p id="message-text" class="mb-6 text-lg"></p>
-    <button id="restart-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-xl font-bangers tracking-wider">Play Again</button>
-  </div>
-</div>
-
-<!-- Deck Builder -->
-<div id="deck-builder-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50 p-4">
-  <div class="bg-gray-700 p-6 rounded-lg shadow-2xl w-full max-w-3xl border-4 border-yellow-400">
+<!-- DECK BUILDER -->
+<div id="deck-builder-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center p-4">
+  <div class="bg-gray-700 p-6 rounded-lg w-full max-w-3xl border-4 border-yellow-400">
     <h2 class="text-3xl font-bangers text-yellow-400 mb-4 text-center">Build Your Deck</h2>
-
     <div class="flex justify-center mb-4">
-      <button class="deck-tab bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded mr-2 active" data-deck="0">Deck 1</button>
+      <button class="deck-tab active bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded mr-2" data-deck="0">Deck 1</button>
       <button class="deck-tab bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded mr-2" data-deck="1">Deck 2</button>
       <button class="deck-tab bg-gray-500 hover:bg-gray-600 px-4 py-2 rounded" data-deck="2">Deck 3</button>
     </div>
-
-    <h3 class="font-bold text-lg mb-2 text-purple-300">Your Deck (<span id="deck-count">0</span>/8)</h3>
-    <div id="current-deck" class="grid grid-cols-4 sm:grid-cols-8 gap-2 bg-gray-800 p-2 rounded-md min-h-[120px] mb-4 border-2 border-gray-600"></div>
-
-    <h3 class="font-bold text-lg mb-2 text-green-300">Card Collection</h3>
-    <div id="card-collection" class="grid grid-cols-4 sm:grid-cols-6 gap-2 bg-gray-800 p-2 rounded-md max-h-[300px] overflow-y-auto"></div>
-
-    <button id="start-battle-button" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-xl font-bangers tracking-wider disabled:bg-gray-500 disabled:cursor-not-allowed">Start Battle</button>
+    <h3 class="mb-2">Your Deck (<span id="deck-count">0</span>/8)</h3>
+    <div id="current-deck"></div>
+    <h3 class="mt-4 mb-2">Card Collection</h3>
+    <div id="card-collection"></div>
+    <button id="start-battle-button" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-xl disabled:bg-gray-500 disabled:cursor-not-allowed">Start Battle</button>
   </div>
 </div>
 
-<script src="main.js"></script>
+<!-- MESSAGE MODAL -->
+<div id="message-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+  <div class="bg-gray-700 p-8 rounded-lg shadow-2xl text-center border-4 border-yellow-400">
+    <h2 id="message-title" class="text-4xl font-bangers text-yellow-400 mb-4"></h2>
+    <p id="message-text" class="mb-6 text-lg"></p>
+    <button id="restart-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-xl">Play Again</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const titleScreen = document.getElementById('title-screen');
+  const startButton = document.getElementById('start-button');
+  const deckButton = document.getElementById('deck-button');
+  const gameContainer = document.getElementById('game-container');
+  const deckBuilderModal = document.getElementById('deck-builder-modal');
+  const startBattleButton = document.getElementById('start-battle-button');
+  const deckTabs = document.querySelectorAll('.deck-tab');
+  const currentDeckEl = document.getElementById('current-deck');
+  const cardCollectionEl = document.getElementById('card-collection');
+  const deckCountEl = document.getElementById('deck-count');
+  const cardHandEl = document.getElementById('card-hand');
+  const elixirCountEl = document.getElementById('elixir-count');
+  const elixirBarFill = document.getElementById('elixir-bar-fill');
+  const messageModal = document.getElementById('message-modal');
+  const restartButton = document.getElementById('restart-button');
+  const messageTitle = document.getElementById('message-title');
+  const messageText = document.getElementById('message-text');
+  const aiTowersEl = document.getElementById('ai-towers');
+  const playerTowersEl = document.getElementById('player-towers');
+  const timerEl = document.getElementById('timer');
+  const gameBoard = document.getElementById('game-board');
+
+  let currentDeck=0;
+  const decks=[[],[],[]];
+  const allCards=[];
+  const handSize=4;
+  let playerElixir=3;
+  const maxElixir=10;
+  let timer=180;
+  let timerInterval=null;
+  let troops=[];
+  let aiTowers=3, playerTowers=3;
+
+  // Cards
+  const troopNames=["Knight","Archer","Giant","Goblin","Wizard","Skeleton","Minion","Balloon","Hog Rider","Valkyrie","P.E.K.K.A","Musketeer","Baby Dragon","Electro Wizard","Ice Spirit","Fire Spirit","Mega Minion","Royal Ghost","Prince","Dark Prince","Ram Rider"];
+  troopNames.forEach(n=>allCards.push({name:n,type:"Troop",cost:Math.floor(Math.random()*6)+1,damage:1,hp:5}));
+
+  function renderDeck(){
+    currentDeckEl.innerHTML='';
+    decks[currentDeck].forEach((card,i)=>{
+      const c=document.createElement('div');
+      c.className='card bg-gray-500 p-2 rounded text-sm text-center';
+      c.textContent=`${card.name} (${card.cost})`;
+      c.addEventListener('click',()=>{decks[currentDeck].splice(i,1); renderDeck(); renderCardCollection();});
+      currentDeckEl.appendChild(c);
+    });
+    deckCountEl.textContent=decks[currentDeck].length;
+    startBattleButton.disabled=decks[currentDeck].length<4;
+  }
+
+  function renderCardCollection(){
+    cardCollectionEl.innerHTML='';
+    allCards.forEach(card=>{
+      const c=document.createElement('div');
+      c.className='card bg-gray-700 p-2 rounded text-sm text-center';
+      c.textContent=`${card.name} (${card.cost})`;
+      if(decks[currentDeck].includes(card)) c.classList.add('disabled');
+      else c.addEventListener('click',()=>{
+        if(decks[currentDeck].length>=8) return;
+        decks[currentDeck].push(card);
+        renderDeck(); renderCardCollection();
+      });
+      cardCollectionEl.appendChild(c);
+    });
+  }
+
+  startButton.addEventListener('click',()=>{
+    titleScreen.classList.add('hidden');
+    if(decks[0].length<4){
+      deckBuilderModal.classList.remove('hidden');
+      renderDeck(); renderCardCollection();
+    }else startGame();
+  });
+
+  deckButton.addEventListener('click',()=>{
+    titleScreen.classList.add('hidden');
+    deckBuilderModal.classList.remove('hidden');
+    renderDeck(); renderCardCollection();
+  });
+
+  startBattleButton.addEventListener('click',()=>{
+    deckBuilderModal.classList.add('hidden');
+    startGame();
+  });
+
+  deckTabs.forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      deckTabs.forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      currentDeck=parseInt(tab.dataset.deck);
+      renderDeck(); renderCardCollection();
+    });
+  });
+
+  function startGame(){
+    gameContainer.classList.remove('hidden');
+    playerElixir=3;
+    elixirCountEl.textContent=playerElixir;
+    elixirBarFill.style.width=(playerElixir/maxElixir*100)+'%';
+    timer=180; timerEl.textContent=timer;
+    aiTowers=3; playerTowers=3; aiTowersEl.textContent=aiTowers; playerTowersEl.textContent=playerTowers;
+    cardHandEl.innerHTML='';
+    troops=[];
+
+    for(let i=0;i<handSize;i++) if(decks[currentDeck][i]) drawCard(decks[currentDeck][i]);
+
+    if(timerInterval) clearInterval(timerInterval);
+    timerInterval=setInterval(()=>{
+      timer--; timerEl.textContent=timer;
+      moveTroops();
+      checkVictory();
+      if(timer<=0) endGame("Draw","Time ran out!");
+    },1000);
+  }
+
+  function drawCard(card){
+    const c=document.createElement('div');
+    c.className='card bg-purple-500 p-2 rounded text-sm text-center';
+    c.textContent=`${card.name} (${card.cost})`;
+    if(playerElixir<card.cost) c.classList.add('disabled');
+    c.addEventListener('click',()=>{
+      if(playerElixir>=card.cost){
+        playerElixir-=card.cost;
+        elixirCountEl.textContent=playerElixir;
+        elixirBarFill.style.width=(playerElixir/maxElixir*100)+'%';
+        spawnTroop(card,"player");
+        c.remove();
+      }
+    });
+    cardHandEl.appendChild(c);
+  }
+
+  function spawnTroop(card,owner){
+    const t=document.createElement('div');
+    t.className='troop';
+    if(owner==="ai") t.classList.add('enemy');
+    t.textContent=card.name[0];
+    gameBoard.appendChild(t);
+    let x=owner==="player"?50:gameBoard.offsetWidth-90;
+    let y=owner==="player"?gameBoard.offsetHeight-100:50;
+    t.style.left=x+'px';
+    t.style.top=y+'px';
+    troops.push({el:t,owner,damage:card.damage,hp:card.hp});
+  }
+
+  function moveTroops(){
+    troops.forEach(tr=>{
+      let speed=10;
+      let dx=tr.owner==="player"?speed:-speed;
+      let newX=tr.el.offsetLeft+dx;
+      if(tr.owner==="player" && newX>=gameBoard.offsetWidth-80){
+        aiTowers--; aiTowersEl.textContent=aiTowers;
+        tr.el.remove();
+        troops=troops.filter(tt=>tt!==tr);
+      } else if(tr.owner==="ai" && newX<=50){
+        playerTowers--; playerTowersEl.textContent=playerTowers;
+        tr.el.remove();
+        troops=troops.filter(tt=>tt!==tr);
+      } else tr.el.style.left=newX+'px';
+    });
+  }
+
+  function checkVictory(){
+    if(aiTowers<=0) endGame("Victory!","You destroyed all enemy towers!");
+    if(playerTowers<=0) endGame("Defeat!","Your towers were destroyed.");
+  }
+
+  function endGame(title,text){
+    gameContainer.classList.add('hidden');
+    messageTitle.textContent=title;
+    messageText.textContent=text;
+    messageModal.classList.remove('hidden');
+    clearInterval(timerInterval);
+    troops.forEach(t=>t.el.remove());
+    troops=[];
+  }
+
+  restartButton.addEventListener('click',()=>{
+    messageModal.classList.add('hidden');
+    titleScreen.classList.remove('hidden');
+  });
+});
+</script>
+
 </body>
 </html>
